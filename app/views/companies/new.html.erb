@@ -1,0 +1,7 @@
+<div id="company-form"></div>
+<%= render :partial => 'form_items', :object => :company_form_items %>
+<%= ext_form_for :company,
+                 :element => 'company-form',
+                 :form_items => :company_form_items,
+				 :title => :create.l << " " << :l_company.localize
+                 :mode => :new %>

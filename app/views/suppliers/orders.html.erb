@@ -1,0 +1,87 @@
+<%= javascript_include_tag "invoice.js" %>
+
+<div id="order-grid"></div>
+<script type="text/javascript">
+//<![CDATA[
+          var order_datastore = new Ext.data.Store({
+                  proxy: new Ext.data.HttpProxy({
+                             url: '/suppliers/orders/<%=@supplier.id%>?format=ext_json',
+                             method: 'GET'
+                         }),
+                  reader: new Ext.data.JsonReader({
+                              root: 'orders',
+                              id: 'id',
+                              totalProperty: 'results'
+                          },
+                          [ {name: 'id', mapping: 'id'},
+						  	{name:"order[login]",mapping:'user.login'},
+							{name: 'order[project_id]', mapping: 'project_id'},
+							{name: 'order[budget_id]', mapping: 'budget_id'},
+							{name: 'order[user_id]', mapping: 'user_id'},
+							{name: 'order[document_id]', mapping: 'document_id'},
+							{name: 'order[created_at]', mapping: 'created_at'},
+							{name: 'order[updated_at]', mapping: 'updated_at'} 
+						]),
+                  // turn on remote sorting
+                  remoteSort: true,
+                  sortInfo: {field: 'updated_at', direction: 'ASC'}
+              });
+
+//]]>
+</script>
+<% javascript_tag do -%>
+ 
+		
+  var order_column_model = new Ext.grid.ColumnModel([
+    
+    {id: 'sh', header: "Visualizza",  width: 20, renderer:function(a,b,r){return "<a target='_blank' href='/documents/show/" + r.get("order[document_id]") + "'>visualizza</a>"}
+	},
+	is_iframe?{hidden:true}:
+	{id: 'bg',hidden:true, header: "Budget", width: 20, renderer:function(a,b,r){return "<a href='/budgets/edit/" + r.get("order[budget_id]") + "'>vai</a>"}},
+    {id: 'id', header: "Ordine", width: 20, dataIndex: 'id'},
+	{header: 'Data Creazione', dataIndex: 'order[created_at]',renderer: Ext.util.Format.dateRenderer('d/m/Y H:i:s')},
+    {header: 'Ultimo Utente', dataIndex: 'order[login]'},
+    {header: 'Data Ultima Modifica', dataIndex: 'order[updated_at]',renderer: Ext.util.Format.dateRenderer('d/m/Y H:i:s')}
+  ]);
+ 
+<% end -%>
+<script type="text/javascript">
+//<![CDATA[
+          Ext.onReady(function(){
+
+              Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+			  
+              var ds = order_datastore;
+
+              var cm = order_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+                  loadMask:true,
+                  sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                  renderTo:   'order-grid',
+                  title:      '<%= :listing.l + " " +  :l_orders.l%> per <%=:l_supplier.localize%> <%=@supplier.ragionesociale%>',
+                  id:         null,
+                  width:      540,
+                  height:     208,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  } 
+
+                  
+               
+              });
+			 
+              
+              ds.load( );
+
+          });
+		  
+
+//]]>
+</script>

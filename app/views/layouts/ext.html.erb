@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title>Top Easy Financial System - T E F S </title>
+  <link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />  
+  <%= stylesheet_link_tag 'ext_scaffold','extras','top', "../ext/resources/css/xtheme-olive.css", :cache => "cache/all"%>
+   <%= javascript_include_tag "../ext/adapter/prototype/prototype.js", "../ext/adapter/prototype/scriptaculous.js?load=effects",:cache=>"cache/all"%>
+ 	<script type="text/javascript" src="http://extjs.cachefly.net/builds/ext-cdn-8.js"></script>
+   <%= javascript_include_tag 	 "ext_datetime.js", "ext_searchfield.js",
+								"../ext/build/locale/ext-lang-it.js","extras-min.js",
+								 "application-min.js", "miframe-min.js",
+								 :cache => "cache/all"  
+  %>
+  <% javascript_tag do -%>
+  
+  
+   var tab_mode=":multiple";
+   var viewport;
+   Ext.onReady(function(){
+//   Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+        
+       		viewport = new Ext.Viewport({
+            layout:'border',
+            items:[
+               {
+                    region:'south',
+                    contentEl: 'south',
+                    split:true,
+                    minSize: 30,
+                    maxSize: 50,
+					height:50,
+                    collapsible: true,
+					header:true,
+                    margins:'0 0 0 0'
+                }, {
+                    region:'west',
+                    id:'west-panel',
+                    title:'Attivit&agrave;',
+					iconCls:'icon_wand',
+                    split:true,
+                    width: 200,
+					contentEl: 'west',
+                    minSize: 175,
+                    maxSize: 400,
+                    collapsible: true,
+                    margins:'0 0 0 5',
+                    layout:'accordion',
+                    layoutConfig:{
+						fill:false,
+                        animate:true,
+						//activeOnTop:true,
+						titleCollapse:false
+                    },
+                    items: [<%= render :partial => 'attivita'%>]
+                },
+                new Ext.TabPanel({
+                    region:'center',
+                    deferredRender:false,
+					id:'home_panel',
+						enableTabScroll:true,
+                    activeTab:0,
+                    items:[new Ext.ux.ManagedIframePanel({
+								defaultSrc:'/home/riepilogo/',
+								id:"action_frame",
+								height:getViewPort().height,
+								width:getViewPort().width,
+								loadMask:true,
+								fit:true,
+								closable:false,
+								title:"Riepilogo"
+							}) ]
+                })
+             ]
+        });
+      
+	  Ext.getCmp("action_frame").on('documentloaded',function(a,b,c){
+			receive_title(a.getDocument().title);
+	  
+	  }); 
+	  Ext.addBehaviors({
+	  		 'a.link_action@click' : function(e, t){
+				       gestisciAttivita(e,t);
+					   
+				}
+	  });
+		 
+    });
+
+<% end -%>
+<script>
+	
+	function receive_title(title){
+		if(title!="")
+			Ext.getCmp("home_panel").getActiveTab().setTitle(title);
+		
+	}
+	
+	function gestisciAttivita(e,t){
+
+		//Ext.getCmp("central_tab").setTitle(t.innerHTML);
+		if (tab_mode == ":single") {
+			Ext.getCmp("action_frame").setTitle(t.innerHTML);
+			Ext.getCmp("action_frame").setSrc(t.getAttribute("action"));
+			
+		}
+		else 
+			if (tab_mode == ":multiple") {
+				var hp = Ext.getCmp("home_panel");
+				var new_panel=new Ext.ux.ManagedIframePanel({
+								defaultSrc:t.getAttribute("action"),
+								loadMask:true,
+								iconCls:t.getAttribute("iconCls"),
+								fit:true,
+								title:t.innerHTML
+							});
+				hp.add(new_panel);
+				hp.activate(new_panel);
+		}
+	//	$(":action_frame").src=t.getAttribute("action");
+		
+		
+	}
+	
+	
+	
+</script>  
+  
+  
+</head>
+<body>
+<%=yield%>
+
+
+  <div id="west">
+  		<center>
+	
+
+	<div class="logo" style="font-size:10px">Top Easy Financial System<br>versione 1.0
+  			 <br>
+			 <img src="../images/top_logo.png"/>
+	</div>
+			 </center>
+  	</div>
+   
+   
+  <div id="south" style="font-size:9px">
+ <span><a href="/home/"><img border="0" src="/images/house.png">home</a>| Utente collegato <%=@current_user.login rescue nil %> | 
+  <a href="/session/new"><img border="0" src="/images/exit.png">esci</a>  </span>   
+  </div>
+
+</body>
+</html>

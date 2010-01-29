@@ -1,0 +1,18 @@
+<% javascript_tag do -%>
+  var <%= "#{form_items}" %> = [
+     {  fieldLabel: 'Ragione Sociale',  allowBlank: false,    xtype: 'textfield',  name: 'supplier[ragionesociale]'},
+    {  fieldLabel: 'Partita Iva',  allowBlank: true,     xtype: 'textfield',  name: 'supplier[partitaiva]'},
+    {  fieldLabel: 'Codice Fiscale',    xtype: 'textfield',  name: 'supplier[codicefiscale]'},
+    {  fieldLabel: 'Indirizzo',  xtype: 'textfield',  name: 'supplier[indirizzo]'},
+    {  fieldLabel: 'Civico',  xtype: 'textfield',  name: 'supplier[civico]'},
+    {  fieldLabel: 'Comune',    xtype: 'textfield',  name: 'supplier[comune]'},
+    {  fieldLabel: 'Cap',  xtype: 'textfield',  name: 'supplier[cap]'},
+    {  fieldLabel: 'Prov',  vtype: 'prov',  xtype: 'textfield',  name: 'supplier[prov]',maxLength:2,width:40},
+    {  fieldLabel: 'Note',  xtype: 'textarea',  name: 'supplier[note]'},
+    {  fieldLabel: 'Telefono',  vtype: 'phone',  xtype: 'textfield',  name: 'supplier[telefono]'},
+    {  fieldLabel: 'Fax',  vtype: 'phone',  xtype: 'textfield',  name: 'supplier[fax]'},
+    {  fieldLabel: 'Email',  vtype: 'email',  xtype: 'textfield',  name: 'supplier[email]'},
+	{  fieldLabel: 'Coordinate Bancarie',   xtype: 'textarea',  name: 'supplier[coordinatebancarie]'}
+	
+  ];
+<% end -%>

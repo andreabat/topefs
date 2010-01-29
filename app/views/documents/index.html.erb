@@ -1,0 +1,299 @@
+
+<%= stylesheet_link_tag "../stylesheets/icons.css" %>
+<%= stylesheet_link_tag "../stylesheets/filetype.css" %>
+<%= stylesheet_link_tag "../stylesheets/filetree.css" %>
+<%= stylesheet_link_tag "../stylesheets/upload_progress.css" %>
+<%= javascript_include_tag "filetree/Ext.ux.form.BrowseButton.js" %>
+<%= javascript_include_tag "filetree/Ext.ux.FileUploader.js" %>
+<%= javascript_include_tag "filetree/Ext.ux.UploadPanel.js" %>
+
+<script type="text/javascript">
+//<![CDATA[
+          Ext.onReady(function(){
+
+              Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+
+              var ds = document_datastore;
+
+              var cm = document_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+                  loadMask:true,
+                  sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                  renderTo:   'document-grid',
+                  title:      'Elenco Documenti',
+                  id:         "grid-docs",
+                   width:getViewPort(25).width,
+				 height:getViewPort(5).height,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  },
+
+                  // inline toolbars
+                  tbar:[{
+                      text:'Aggiungi',
+                      tooltip:'Create new Document',
+                      handler: function(){window.location.href = '/documents/new';},
+                      iconCls:'add'
+                  }, '-', {
+                      text:'Modifica',
+                      tooltip:'Edit selected Document',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                   window.location.href = '/documents/' + selected.data.id + '/edit';
+                                 } else { 
+                                   alert('Selezionare una riga.');
+                                 }
+                               },
+                      iconCls:'edit'
+                  },'-',{
+                      disabled:true,
+                      text:'Delete...',
+                      tooltip:'Delete selected Document',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                   if(confirm('Really delete?')) {
+                                      var conn = new Ext.data.Connection();
+                                      conn.request({
+                                          url: '/documents/' + selected.data.id,
+                                          method: 'POST',
+                                          params: { _method: 'DELETE',
+                                                    authenticity_token: '865790df8cdd3094b683744a2d9bb3547a407db9'
+                                                  },
+                                          success: function(response, options){ ds.load(); },
+                                          failure: function(response, options){ alert('Delete operation failed.'); }
+                                      });
+                                   }
+                                 } else { 
+                                   alert('Selezionare una riga.');
+                                 }
+                               },
+                      iconCls:'remove'
+                  },'->'],
+                  bbar: new Ext.PagingToolbar({
+                            pageSize: 5,
+                            store: ds,
+                            displayInfo: true,
+                            displayMsg: 'Record {0} - {1} of {2}',
+                            emptyMsg: 'Nessun record trovato.'
+                  })
+                  
+              });
+
+              // show record on double-click
+              
+              ds.baseParams={fields:'',query:''}
+              ds.load({
+                          params: { 
+                                    start: 0, 
+                                    limit:5 ,
+                                    fields:'',
+                                    query:''
+                                    
+                                    }
+                        });
+
+          });
+
+
+          var document_datastore = new Ext.data.Store({
+                  proxy: new Ext.data.HttpProxy({
+                             url: '/documents?format=ext_json<%="&project_id=#{params[:project_id]}" if params[:project_id]%>',
+                             method: 'GET'
+                         }),
+                  reader: new Ext.data.JsonReader({
+                              root: 'documents',
+                              id: 'id',
+                              totalProperty: 'results'
+                          },
+                          [ {name:"document[login]",mapping:'user.login'},{name: 'id', mapping: 'id'}, {name: 'document[doc_mine]', mapping: 'doc_mine'},{name: 'document[project_id]', mapping: 'project_id'},{name: 'document[doc]', mapping: 'doc'},{name: 'document[user_id]', mapping: 'user_id'},{name: 'document[created_at]', mapping: 'created_at', type: 'date',dateFormat:'c'},{name: 'document[doctype]', mapping: 'doctype'} ]),
+                  // turn on remote sorting
+                  remoteSort: true,
+                  sortInfo: {field: 'id', direction: 'ASC'}
+              });
+
+
+ 
+  var document_column_model = new Ext.grid.ColumnModel([
+    {id: 'Codice',hidden:true, header: "#", width: 20, dataIndex: 'id'},
+    {header: 'Documento', dataIndex: 'document[doc]',renderer:function(v){if(v) return v.split("/").last()}},
+	{
+		header: 'Tipo',
+		dataIndex: 'document[doctype]'
+	},
+    {header: 'Utente', dataIndex: 'document[login]'},
+    {header: 'Data Upload', dataIndex: 'document[created_at]',renderer: Ext.util.Format.dateRenderer('d/m/Y H:i:s')}
+  ]);
+  
+  	function notifyStart(){
+		$("_file_summary").update ("Invio in corso di " +  $("document_doc").value.split("\\").last());
+		Ext.DomHelper.append( $("_file_summary") ,{
+				tag:"img",
+				src:"/images/active_scaffold/default/indicator.gif"
+		});
+	}	 
+	
+	function displayFile(a,b,c){
+			var url = "/document/doc/" +a.store.getAt(b).get("document[doc_mine]");
+		//	window.open (url);
+			downloadFile(url);
+			
+	}
+	
+	function finish(){
+		Ext.Msg.alert("System","File Inviato.",
+							function(){
+										//Ext.getCmp("_file_toolbar").hide();
+										$("_file_upload").hide();
+										});
+							Ext.getCmp("grid-docs").store.reload();
+	}
+	
+	function manageUpload()
+	{
+		$("_file_summary").update ("Selezionato " + $("document_doc").value.split("\\").last());
+		$("document_doc").hide();
+		$("_file_submit").show();
+	}
+	
+// set blank image to local file
+Ext.BLANK_IMAGE_URL = '/ext/resources/images/default/s.gif';
+
+// run this function when document becomes ready
+Ext.onReady(function() {
+	var win_add_doc;
+	var iconPath = '/images/active_scaffold/default/';
+	//disabilito i tools
+	Ext.getCmp("grid-docs").getTopToolbar().disable();
+	Ext.getCmp("grid-docs").on("rowdblclick", function(grid, row, e) {
+                displayFile(grid,row);
+				e.stopPropagation();
+				
+              },this,{preventDefault:true,stopEvent:true,stopPropagation :true});
+	
+ 	var up = new Ext.ux.UploadPanel({
+			  xtype:'uploadpanel'
+			 ,buttonsAt:'tbar'
+			 ,emptyText:"Nessun file"
+			 ,id:'uppanel'
+			 ,url:'/documents/create?format=json&project_id=<%=params[:project_id]%>'
+			 ,path:'/'
+			 ,maxFileSize:1048576
+ 			 ,enableProgress:false
+ 			 ,singleUpload:false
+		});
+    var win = new Ext.Window({
+         width:180
+		,minWidth:165
+        ,id:'winid'
+        ,height:220
+		,minHeight:200
+        ,layout:'fit'
+        ,border:false
+        ,closable:false
+        ,title:'Pannello di Upload'
+		,iconCls:'icon-upload'
+		,items:[up]
+    });
+	
+	up.on("allfinished",function(){Ext.getCmp("grid-docs").store.reload();});
+    win.show();
+}) // end of onReady
+
+
+// end of file
+
+  function downloadFile(path) {
+
+		// create hidden target iframe
+		var id = Ext.id();
+		var frame = document.createElement('iframe');
+		frame.id = id;
+		frame.name = id;
+		frame.className = 'x-hidden';
+		if(Ext.isIE) {
+			frame.src = Ext.SSL_SECURE_URL;
+		}
+
+		document.body.appendChild(frame);
+
+		if(Ext.isIE) {
+			document.frames[id].name = id;
+		}
+
+		var form = Ext.DomHelper.append(document.body, {
+			 tag:'form'
+			,method:'get'
+			,action:path
+			,target:id
+		});
+
+		document.body.appendChild(form);
+
+		var hidden;
+
+		// append cmd to form
+		hidden = document.createElement('input');
+		hidden.type = 'hidden';
+		hidden.name = 'cmd';
+		hidden.value = 'download';
+		form.appendChild(hidden);
+
+		// append path to form
+		hidden = document.createElement('input');
+		hidden.type = 'hidden';
+		hidden.name = 'path';
+		hidden.value = path;
+		form.appendChild(hidden);
+
+		var callback = function() {
+			Ext.EventManager.removeListener(frame, 'load', callback, this);
+			setTimeout(function() {document.body.removeChild(form);}, 100);
+			setTimeout(function() {document.body.removeChild(frame);}, 110);
+		};
+		
+		Ext.EventManager.on(frame, 'load', callback, this);
+
+		form.submit();
+	}
+//]]>
+</script>
+<div id="document-grid">
+            </div>
+<!--
+<table>
+    <tr>
+        <td width="60%">
+            
+            <div id="document-form">
+            </div>
+        </td>
+		<td valign="top">
+			<fieldset style="display:none" id="_file_upload"><legend>seleziona file</legend>
+		<%= form_tag_with_upload_progress({:class=>"document-form" ,:action => 'create'}, {:finish => 'finish()'})%>
+			<br>
+			<span style="display:none">
+			<%= upload_status_tag %>
+			</span>
+			 <input type="hidden" name="project_id" value="<%=@project.id%>"/>
+			<%= file_field 'document', 'doc',:onchange=>'manageUpload()',:size=>"20px"  %><br/>
+			<div id="_file_summary"></div>
+			<input  style="display:none;width:40px" id="_file_submit" type="submit" value="invia" onclick="notifyStart()"/>
+		</fieldset> 
+		</td>
+	</tr>
+</table>-->
+ 
+
+
+	
+<div id="treepanel" style="margin:20px 0 0 0px"></div>
+<!--<div id="comboct"></div>-->

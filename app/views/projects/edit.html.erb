@@ -1,0 +1,200 @@
+<%= javascript_include_tag "miframe.js" %>
+<%= javascript_include_tag "swfobject.js" %>
+<%= render :partial => 'form_items', :object => :project_form_items %>
+
+<!-- PARTE FORM -->
+<script type="text/javascript">
+//<![CDATA[ 
+var panel;
+	var mgr;
+          Ext.onReady(function(){
+              Ext.QuickTips.init();
+			  Ext.Updater.defaults.loadScripts=true;	
+			  Ext.Updater.defaults.showLoadIndicator=true;	
+			  
+			
+              // turn on validation errors beside the field globally
+              Ext.form.Field.prototype.msgTarget = 'side';
+
+                  panel = new Ext.FormPanel({
+				  	width:getViewPort(5).width,
+					height:getViewPort(5).height,
+                  labelWidth:   65, // label settings here cascade unless overridden
+                  url:          '/projects',
+                  frame:         false,
+                  waitMsgTarget: true,
+				  iconCls:'icon_asterisk',
+                  title:         '<%=:l_project.l%>',
+                  bodyStyle:     'padding:5px 5px 0',
+				  header:false,
+				  tbar:new Ext.Toolbar({
+				  	items:[new Ext.Toolbar.MenuButton({
+																	
+														            text: 'Visualizza...',
+														            tooltip: {text:'Per visualizzare dettagli..', title:'Visualizza dettagli', autoHide:true},
+														            iconCls: 'icon_zoom',
+														            menu : {items: [
+														                        {iconCls:'icon_book',text: '<b><%=:l_budget.l%></b>', handler: add_tab.bind(this,"/projects/edititems/<%=@project.id%>","<%=:l_budget.l%>","icon_book")},
+																				{iconCls:'icon_preventivi',text: '<b><%=:l_pricings.l%></b>', handler: add_tab.bind(this,"/pricings?project_id=<%=@project.id%>","<%=:l_pricings.l%>","icon_preventivi")},
+																				{iconCls:'icon_euro',text: '<b><%=:l_invoices.l%></b>', handler: add_tab.bind(this,"/invoices?project_id=<%=@project.id%>","<%=:l_invoices.l%>","icon_euro")},
+																				{iconCls:'icon_ordini',text: '<b><%=:l_orders.l%></b>', handler: add_tab.bind(this,"/orders?project_id=<%=@project.id%>","<%=:l_orders.l%>","icon_ordini")},
+																				{iconCls:'icon_incassi',text: '<b><%=:l_proceeds.l%></b>', handler: add_tab.bind(this,"/proceeds?project_id=<%=@project.id%>","<%=:l_proceeds.l%>","icon_incassi")},
+																				{iconCls:"icon_documents",text: '<b><%=:l_documents.l%></b>', handler: add_tab.bind(this,"/documents?project_id=<%=@project.id%>","<%=:l_documents.l%>","icon_documents")},
+																				{iconCls:'icon_calendar',text: '<b><%=:l_timesheet.l%></b>', handler: add_tab.bind(this,"/timesheet?project_id=<%=@project.id%>","<%=:l_timesheet.l%>","icon_calendar")} ,
+																				{iconCls:'icon_coins',text: '<b>Grafici', handler: add_tab.bind(this,"/reports/view?project_id=<%=@project.id%>","Grafici","icon_coins")} 
+																				
+														                ]}
+        															}),
+																	
+											 
+																	{  id: 'save_btn', iconCls:'icon_save', text: '<%=:l_save.localize%>',  type: 'submit',  handler: function(){ panel.form.submit({url:'/projects/<%=@project.id%>?format=ext_json', params:{ _method:'PUT' },
+																	
+                                             success:function(a,b,c){
+			                                                Ext.Msg.alert('Status','Dato salvato.')
+                                                  },
+                                            failure:function(a,b,c){
+                                                if (b.result) {
+													Ext.Msg.alert('System', 'Errore di sistema:' + $H(b.result.errors).values().join('<br>'));
+												}
+												else {
+													Ext.Msg.alert('System', 'Errore di sistema:' + b.response.responseText);
+												}
+                                            },
+                                             waitMsg:'<%=:saving.l%>'}); }},
+											 
+											 {  id: 'elimina_btn', iconCls:'icon_delete',type:"submit", text: '<%=:l_delete.localize%>',  
+																				handler: function(){ 
+																						if (!confirm("L'operazione di cancellazione è irreversibile.Proseguire ? ")){
+																							return;
+																						}
+																						panel.form.submit({url:'/projects/<%=@project.id%>?format=ext_json', params:{ _method:'DELETE' },
+																						success:function(a,b,c){
+													                                                Ext.Msg.alert('Status','Dato eliminato.',function(){
+																										find_parent_tab({close:true});
+																									});
+										                                                  },
+										                                            failure:function(form,action){
+																						 
+																						   switch (action.failureType) {
+            case Ext.form.Action.CLIENT_INVALID:
+                Ext.Msg.alert("Failure", "Form fields may not be submitted with invalid values");
+                break;
+            case Ext.form.Action.CONNECT_FAILURE:
+                Ext.Msg.alert("Failure", "Ajax communication failed");
+                break;
+            case Ext.form.Action.SERVER_INVALID:
+               Ext.Msg.alert("Failure", action.result.msg);
+       }
+ 
+										                                            },
+										                                             waitMsg:'<%=:deleting.l%>'}); }}  
+														]
+																	
+																	
+																	
+		})
+        ,
+                  monitorValid:   true,
+                  defaults:      {width: 230},
+                  defaultType:   'textfield',
+                  renderTo:      'project-form',
+                  listeners:{
+                   
+                                'actionfailed':{
+                                  fn:function(f,ok){
+                                  }
+                                },
+                                'clientvalidation':{
+                                    fn:function(f,ok){
+                                      var o  =Ext.getCmp("save_btn");
+                                      ok?o.enable():o.disable();
+                                    }
+                                  } 
+                            },
+                  baseParams:    {authenticity_token:'<%=form_authenticity_token%>'},
+                  items: project_form_items 
+              });
+ 
+		 
+		 finance_summary();
+		 
+		 new Ext.TabPanel(
+		 { 
+		 deferredRender:false,
+		 renderTo:"tab-all",
+         plain:true,
+		width:getViewPort(5).width,
+					height:getViewPort(5).height,
+		 id:'alter-tabs',
+		 
+         layoutOnTabChange:true,
+		 activeTab:panel,
+		 enableTabScroll:true,
+		 defaults:{ deferredRender:true},
+		 	items:[
+							panel,
+							new Ext.Panel({
+								title:"Riepilogo Finanze",
+								iconCls:'icon_coins',
+								contentEl:'info-hotspot'
+							})
+						 
+							]
+
+		 }
+		 )
+									
+	})
+	
+	function interpret_intention(what){
+		alert(what)
+	}
+	
+	
+	function add_tab(url,title,iconCls){
+		var tm  = Ext.getCmp("alter-tabs");
+		if (tm.findById(title)) {
+			tm.activate(title);
+		}else{
+				var nt = 	new Ext.ux.ManagedIframePanel({
+								defaultSrc:url,
+								iconCls:iconCls,
+								height:getViewPort().height,
+								width:getViewPort().width,
+								id:title,
+								loadMask:true,
+								closable:true,
+								title:title
+							});
+				tm.add(nt);
+				tm.activate(nt);
+		}
+	}
+	
+	function finance_summary(){
+		mgr = new Ext.Updater("info-hotspot");
+		mgr.startAutoRefresh(6000, "/projects/finance_summary/<%=@project.id%>",null,null,true);
+		panel.form.setValues(<%=@project.to_ext_json(:output_format => :form_values)%>);
+		
+	}
+	function update_finance_data(){
+		mgr.update("/projects/finance_summary/<%=@project.id%>");
+	}
+</script>
+	
+ 
+		 <div id="tab-all" ></div></td>
+	 
+	
+<div id="project-form"> 
+	<!--	<ul>
+			<li><a href="#" onclick='add_tab("/budgets?project_id=<%=@project.id%>","<%=:l_budget.l%>")'><%=:l_budget.l%></a></li>
+			<li><a href="#" onclick='add_tab("/pricings?project_id=<%=@project.id%>","<%=:l_pricings.l%>")'><%=:l_pricings.l%></a></li>
+			<li><a href="#" onclick='add_tab("/invoices?project_id=<%=@project.id%>","<%=:l_invoices.l%>")'><%=:l_invoices.l%></a></li>
+			<li><a href="#" onclick='add_tab("/orders?project_id=<%=@project.id%>","<%=:l_orders.l%>")'><%=:l_orders.l%></a></li>
+			<li><a href="#" onclick='add_tab("/proceeds?project_id=<%=@project.id%>","<%=:l_proceeds.l%>")'><%=:l_proceeds.l%></a></li>
+			<li><a href="#" onclick='add_tab("/documents?project_id=<%=@project.id%>","<%=:l_documents.l%>")'><%=:l_documents.l%></a></li>			
+			<li><a href="#" onclick='add_tab("/timesheet?project_id=<%=@project.id%>","<%=:l_timesheet.l%>")'><%=:l_timesheet.l%></a></li>			
+		</ul>-->
+			</div>
+		<div id="info-hotspot"></div>

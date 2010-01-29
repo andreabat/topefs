@@ -1,0 +1,18 @@
+<% javascript_tag do -%>
+  var <%= "#{form_items}" %> = [
+    <%= ext_field(:field_label => 'Ragione Sociale', :name => 'company[ragionesociale]', :xtype => :text_field) %>,
+    <%= ext_field(:field_label => 'Indirizzo', :name => 'company[indirizzo]', :xtype => :text_field) %>,
+    <%= ext_field(:field_label => 'Comune', :name => 'company[comune]', :xtype => :text_field) %>,
+    <%= ext_field(:field_label => 'Cap', :name => 'company[cap]', :xtype => :text_field,:vtype=>"numeric") %>,
+    <%= ext_field(:field_label => 'Prov', :name => 'company[prov]', :xtype => :text_field,:vtype=>"prov",:maxLength=>2) %>,
+    <%= ext_field(:field_label => 'Partita IVA', :name => 'company[partitaiva]', :xtype => :text_field,:vtype=>"partitaiva") %>,
+    <%= ext_field(:field_label => 'Codice Fiscale', :name => 'company[codicefiscale]', :xtype => :text_field,:vtype=>"codicefiscale") %>,
+    <%= ext_field(:field_label => 'Telefono', :name => 'company[telefono]', :xtype => :text_field) %>,
+    <%= ext_field(:field_label => 'Email', :name => 'company[email]', :xtype => :text_field,:vtype=>"email") %>,
+    <%= ext_field(:field_label => 'Fax', :name => 'company[fax]', :xtype => :text_field) %>,
+    <%= ext_field(:field_label => 'Coordinate Bancarie', :name => 'company[coordinatebancarie]', :xtype => :text_field) %>,
+	<%= ext_field(:field_label => 'REA', :name =>  'company[rea]', :xtype => :text_field) %>,
+	<%= ext_field(:field_label => 'Web', :name => 'company[web]', :xtype => :text_field) %>
+	
+  ];
+<% end -%>

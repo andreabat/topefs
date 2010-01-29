@@ -1,0 +1,45 @@
+<div><p><br></p>
+<table>
+	<tr><td width="50%">
+			<div id="customer-form"></div>
+		</td>
+		<td valign="top">
+			<div id="project-grid"></div>
+			 
+			<div id="invoices-grid">
+
+			</div>
+		</td>
+		
+		
+	</tr>
+	
+</table>
+
+</div>
+<%= render :partial => 'form_items', :object => :customer_form_items %>
+<%= ext_form_for :customer,
+                 :element => 'customer-form',
+				 
+                 :form_items => :customer_form_items,
+                 :mode => :edit,
+				 :noback=>true,
+				 :save_callback=> 'function(a,b,c){find_parent_tab({close:true})}',
+				 :title => (:grid_edit.l + ' ' + :l_customer.l)
+ %>
+<script>
+Ext.onReady(function(){
+	var p = new Ext.Button({
+		text:"<%=:listing.l << ' ' << :l_projects.l%>",
+		renderTo:"invoices-grid",
+		handler:function()
+		{
+			build_parent_tab('/customers/projects/a?customer_id=<%=@customer.id%>' ,'<%=:l_projects.l%> per <%=@customer.ragionesociale%>')
+		}
+		
+	})
+	
+	
+})		
+</script> 
+ 

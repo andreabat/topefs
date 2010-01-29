@@ -1,0 +1,41 @@
+<div><p><br></p>
+<table>
+	<tr><td width="50%">
+			<div id="supplier-form"></div>
+		</td>
+		<td valign="top">
+			<div id="orders-grid"> 
+										
+			</div>
+			
+		</td>
+		
+		
+	</tr>
+	
+</table>
+</div>
+<%= render :partial => 'form_items', :object => :supplier_form_items %>
+<%= ext_form_for :supplier,
+                 :element => 'supplier-form',
+                 :form_items => :supplier_form_items,
+				 :title => (:grid_edit.l + ' ' + :l_supplier.l),
+				 :noback=>true,
+				 :save_callback=> 'function(a,b,c){find_parent_tab({close:true,refresh:true})}',
+                 :mode => :edit %>
+				 
+ 		 
+<script>
+Ext.onReady(function(){
+	var p = new Ext.Button({
+		text:"<%=:listing.l << ' ' << :l_orders.l%>",
+		renderTo:"orders-grid",
+		handler:function()
+		{
+			build_parent_tab('/suppliers/orders/<%=@supplier.id%>' ,'<%=:l_orders.localize%> per <%=@supplier.ragionesociale%>')
+		}
+		
+	})
+})		
+</script> 
+

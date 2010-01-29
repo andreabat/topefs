@@ -1,0 +1,48 @@
+grid_new: Aggiungi
+grid_edit: Modifica
+grid_delete: Elimina
+grid_search: Cerca
+create: Crea
+created: Dato salvato.
+search: Cerca tra {item}
+saving: Salvataggio
+listing: Elenco
+home_summary: Riepilogo Attività
+grid_select_row: Selezionare una riga.
+grid_no_records: Nessun record trovato.
+projects_list_active: Elenco Commesse Attive
+l_save: Salva
+l_back: Indietro
+l_project: Commessa
+l_projects: Commesse
+l_supplier: Fornitore
+l_suppliers: Fornitori
+l_budgets: Budget
+l_budgetitems: Voci
+l_budget: Budget
+l_customer: Cliente
+l_customers: Clienti
+l_timesheet: Timesheet
+l_admin: Admin
+l_users: Utenti
+l_backup: Backup 
+l_roles: Ruoli
+l_documents: Documenti
+l_orders: Ordini
+l_order: Ordine
+l_pricings: Preventivi
+l_pricing: Preventivo
+l_invoices: Fatture
+l_invoice: Fattura
+l_proceed: Incasso
+l_proceeds: Incassi
+l_companies: Società
+l_company: Società
+sys_error: Errore di sistema
+a_show: Gestione
+a_edit: Gestione
+a_index: Elenco
+a_create: Nuovo
+a_summary: Riepilogo
+l_delete: Elimina
+l_deleting: Eliminazione in corso

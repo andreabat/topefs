@@ -1,0 +1,16 @@
+
+<br>
+<div id="user-grid"></div>
+<%= ext_datastore_for :user %>
+<% javascript_tag do -%>
+  var user_column_model = new Ext.grid.ColumnModel([
+    {id: 'id', header: "#", width: 20, dataIndex: 'id'},
+    {header: 'Utente', dataIndex: 'user[login]'},
+	{header: 'Nominativo', dataIndex: 'user[nominativo]'},
+	{header: 'Attivo', dataIndex: 'user[active]',renderer:function(x){return (x==1||x==true)?"SI":"NO"}}
+  ]);
+<% end -%>
+<%= ext_grid_for :user, :width=>"getViewPort(5).width",:height=>"getViewPort(5).height",
+				:plugin =>'true', :page_size=>@default_grid_page_size,
+				:element => 'user-grid',
+				:title => :listing.l + " " + :l_users.l%>

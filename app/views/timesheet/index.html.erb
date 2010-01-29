@@ -1,0 +1,27 @@
+<%= javascript_include_tag "timesheet.js" %>
+<script>
+	Ext.onReady(function(){
+		timesheet_setup({
+		 	project_id:"<%=@project.id rescue nil%>",
+			project_title:"<%=@project.title rescue nil%>",
+			token:"<%=form_authenticity_token%>",
+			projects:<%=Project.find_all_by_status_id(Status.find_by_status("Aperto")).collect {|c| [c.title,c.id]}.to_json%>});
+	})
+	
+</script>
+
+<table border="0" width="800px">
+	<tr>
+		<td valign="top" width="50%">
+			<div id="date-picker"></div>
+		</td>
+		<td valign="top">
+			<div id="date-timesheet-add"></div>
+		</td>
+		</tr>
+		<tr>
+		<td valign="top" colspan="2">
+				<div id="date-timesheet-detail"></div>
+		</td>
+	</tr>
+	</table>

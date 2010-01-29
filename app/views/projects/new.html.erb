@@ -1,0 +1,62 @@
+<div id="project-form"></div>
+<%= render :partial => 'form_items', :object => :project_form_items %>
+<script type="text/javascript">
+//<![CDATA[
+          Ext.onReady(function(){
+ 
+              Ext.QuickTips.init();
+
+              // turn on validation errors beside the field globally
+              Ext.form.Field.prototype.msgTarget = 'side';
+
+              var panel = new Ext.FormPanel({
+                  labelWidth:   75, // label settings here cascade unless overridden
+                  url:          '/projects',
+                  frame:         true,
+                  waitMsgTarget: true,
+                  title:         '<%=:create.l :l_project.l%>',
+                  bodyStyle:     'padding:5px 5px 0',
+                  width:         350,
+                  monitorValid:   true,
+                  defaults:      {width: 230},
+                  defaultType:   'textfield',
+                  renderTo:      'project-form',
+                  listeners:{
+                   
+                                'actionfailed':{
+                                  fn:function(f,ok){
+                                  }
+                                },
+                                'clientvalidation':{
+                                    fn:function(f,ok){
+                                      var o  =Ext.getCmp("save_btn");
+                                      ok?o.enable():o.disable();
+                                    }
+                                  } 
+                            },
+                  baseParams:    {authenticity_token: '<%=form_authenticity_token%>'},
+                  items: project_form_items,
+                  buttons: [ {  id: 'save_btn',  text: 'Salva',  type: 'submit',  handler: function(){ panel.form.submit({url:'/projects/?format=ext_json', params:{ _method:'POST' },
+                                             success:function(a,b,c){
+                                                Ext.Msg.alert('Status','Dato creato.',function(){
+													change_parent_title("<%=:grid_edit.l%> " + b.result.data["project[title]"]);
+													document.location='/projects/' + b.result.data["project[id]"] + '/edit';})
+                                                  },
+                                            failure:function(a,b,c){
+                                                if(b.result)
+                                                {
+                                                  Ext.Msg.alert('System','Errore di sistema:' + $H(b.result.errors).values().join('<br>'));
+                                                }
+                                                else
+                                                  Ext.Msg.alert('System','Errore di sistema:' + b.response.responseText);
+                                            },
+                                             waitMsg:'<%=:saving.l%>'}); }}
+                                          
+                                           
+                           ]
+              });
+              
+          });
+
+//]]>
+</script>

@@ -1,0 +1,82 @@
+<div id="customer-grid"></div>
+<%= ext_datastore_for :customer %>
+<% javascript_tag do -%>
+  var customer_column_model = new Ext.grid.ColumnModel([
+    //{id: 'id', header: "#", width: 80, dataIndex: 'id',visible:false},
+    {header: 'Ragione Sociale', dataIndex: 'customer[ragionesociale]'},
+    {header: 'Telefono', dataIndex: 'customer[telefono]'},
+    {header: 'Fax', dataIndex: 'customer[fax]'},
+    {header: 'Email', dataIndex: 'customer[email]'}
+  ]);
+<% end -%>
+
+<script type="text/javascript">
+	 
+	
+//<![CDATA[
+          Ext.onReady(function(){
+
+              Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+
+              var ds = customer_datastore;
+
+              var cm = customer_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+				  id:'ext-customer-grid',
+                  sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                  renderTo:   'customer-grid',
+                  title:      '<%=:listing.l%> <%=:l_customers.l%>',
+                  width:      getViewPort(5).width,
+                  height:     getViewPort(5).height,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  },
+
+                  // inline toolbars
+                  tbar:[{
+                      text:'<%=:grid_new.localize%>',
+                      handler: function(){ build_parent_tab('/customers/new','<%=:create.l << " " <<  :l_customer.l %>')  },
+                      iconCls:'icon_new'
+                  }, '-', {
+                      text:'<%=:grid_edit.localize%>',
+                      tooltip:'<%=:grid_edit.localize%>',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+								 	build_parent_tab('/customers/' + selected.data.id + '/edit','<%=:grid_edit.l%> ' + selected.data["customer[ragionesociale]"])
+                                 } else { 
+                                   alert('<%=:grid_select_row.localize%>');
+                                 }
+                               },
+                      iconCls:'icon_edit'
+                  },'->'],
+                  bbar: new Ext.PagingToolbar({
+                            pageSize:  <%=@default_grid_page_size%>,
+                            store: ds,
+                            displayInfo: true,
+                            displayMsg: 'Record {0} - {1} of {2}',
+                            emptyMsg: "<%=:grid_no_records.localize%>"
+                  }),
+                  plugins:[new Ext.ux.grid.Search({
+                              position:'top',
+							  searchText:'<%=:grid_search.localize%>'
+                          })]
+              });
+
+              // show record on double-click
+              grid.on("rowdblclick", function(grid, row, e) {
+			  	build_parent_tab('/customers/' + grid.getStore().getAt(row).id,'<%=:grid_edit.l%> ' +  grid.getStore().getAt(row).get("customer[ragionesociale]"))
+              });
+
+              ds.load({params: {start: 0, limit: <%=@default_grid_page_size%>}});
+          });
+
+//]]>
+</script>

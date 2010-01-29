@@ -1,0 +1,82 @@
+
+<div> 
+<br>
+<div id="customer-form"></div>
+
+</div>
+
+<%= render :partial => 'form_items', :object => :customer_form_items %>
+<script type="text/javascript">
+//<![CDATA[
+		  var LIST_URL="/customers";
+		  var render_to = "customer-form";
+		  
+          Ext.onReady(function(){
+
+              Ext.QuickTips.init();
+
+              // turn on validation errors beside the field globally
+              Ext.form.Field.prototype.msgTarget = 'side';
+
+              var panel = new Ext.FormPanel({
+                  labelWidth:   75, // label settings here cascade unless overridden
+                  url:          LIST_URL,
+                  frame:         true,
+                  waitMsgTarget: true,
+				  monitorValid:true,
+                  title:         '<%=:create.l%> <%=:l_customer.l%>',
+                  bodyStyle:     'padding:5px 5px 0',
+                  width:         350,
+                  defaults:      {width: 230},
+                  defaultType:   'textfield',
+
+                  baseParams:    {authenticity_token: '<%= "#{form_authenticity_token}" %>'},
+                  items: customer_form_items,
+				  listeners:{
+				  				 
+								'actionfailed':{
+									fn:function(f,ok){
+									}
+								},
+								'clientvalidation':{
+										fn:function(f,ok){
+											var o  =Ext.getCmp("save_btn");
+											ok?o.enable():o.disable();
+											
+										}
+									} 
+						},
+                  buttons: [ { 
+				  				id:'save_btn', 
+								text: '<%=:l_save.l%>',  
+								type: 'submit',  
+								handler: function(){ 
+														panel.form.submit({
+																			success:function(a,b,c){
+																					Ext.Msg.alert("Status","<%= :created.l%>",function(){
+																							find_parent_tab({close:true,refresh:true});
+																						})
+																				
+				  																	},
+																			failure:function(a,b,c){
+																					if(b.result)
+																					{
+																						Ext.Msg.alert("System","<%= :sys_error.l%>:" + $H(b.result.errors).values().join("\n"));
+																					}
+																					else
+																						Ext.Msg.alert("System","<%= :sys_error.l%>:" + b.response.responseText);
+																			},
+																			url:LIST_URL + '?format=ext_json', 
+																			waitMsg:'<%=:saving.localize%>...'
+																		}); 
+														}
+							 } 
+                           ]
+              });
+		 
+         	panel.render(Ext.get(render_to));
+			panel.getForm().markInvalid([]);
+          });
+
+//]]>
+</script>

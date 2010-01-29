@@ -1,0 +1,42 @@
+<div id="project-grid"></div>
+<script type="text/javascript">
+//<![CDATA[
+          var project_datastore = new Ext.data.Store({
+                  proxy: new Ext.data.HttpProxy({
+                             url: '/customer/projects/?customer_id=<%=@customer.id%>&format=ext_json',
+                             method: 'GET'
+                         }),
+                  reader: new Ext.data.JsonReader({
+                              root: 'projects',
+                              id: 'id',
+                              totalProperty: 'results'
+                          },
+                          [ {mapping:'status.status',name:'project[status]'},{name: 'id', mapping: 'id'}, {name: 'project[title]', mapping: 'title'},{name: 'project[start]', mapping: 'start'},{name: 'project[end]', mapping: 'end'},{name: 'project[note]', mapping: 'note'},{name: 'project[customer_id]', mapping: 'customer_id'},{name: 'project[company_id]', mapping: 'company_id'},{name: 'project[created_at]', mapping: 'created_at'},{name: 'project[updated_at]', mapping: 'updated_at'},{name: 'project[status_id]', mapping: 'status_id'},{name: 'project[contact]', mapping: 'contact'},{name: 'project[code]', mapping: 'code'},{name: 'project[year]', mapping: 'year'} ]),
+                  // turn on remote sorting
+                  remoteSort: true,
+                  sortInfo: {field: 'id', direction: 'ASC'}
+              });
+              function refresher(){
+                      project_datastore.load({
+                                                          params: {start: 0, limit:5}
+                                                          });
+                                          }
+              
+//]]>
+</script>
+<% javascript_tag do -%>
+  var project_column_model = new Ext.grid.ColumnModel([
+    {id: 'Codice',hidden:true, header: "#", width: 20, dataIndex: 'id'},
+	{id: 'Code', header: "Job N.", width: 20, dataIndex: 'project[code]'},
+    {header: 'Nome', dataIndex: 'project[title]'},
+	{header: 'Stato', dataIndex: 'project[status]'},
+    {header: 'Data Inzio', dataIndex: 'project[start]',renderer: Ext.util.Format.dateRenderer('d/m/Y')},
+    {header: 'Data Fine', dataIndex: 'project[end]'},
+    {header: 'Note', dataIndex: 'project[note]'}
+  ]);
+<% end -%>
+<%= ext_grid_for :project, :element => 'project-grid' , :width=>"getViewPort(5).width",:height=>"getViewPort(5).height",
+:page_size=>@default_grid_page_size,
+:title =>:listing.l << " " << :l_projects.l << " per " << :l_customer.l << " " << @customer.ragionesociale,
+:fields=>"customer_id",
+:query=>@customer.id %>

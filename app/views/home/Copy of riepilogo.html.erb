@@ -1,0 +1,173 @@
+<%= javascript_include_tag "miframe.js" %>
+<div id="project-grid"></div>
+<div id="invoices-grid"></div>
+<div id="timesheet-grid"></div>
+<% javascript_tag do -%>
+var project_datastore = new Ext.data.Store({
+          proxy: new Ext.data.HttpProxy({
+                     url: '/projects/?format=ext_json',
+                     method: 'GET'
+                 }),
+          reader: new Ext.data.JsonReader({
+                      root: 'projects',
+                      id: 'id',
+                      totalProperty: 'results'
+                  },
+                  [ {name: 'id', mapping: 'id'}, {name: 'project[title]', mapping: 'title'},{name: 'project[start]', mapping: 'start'},{name: 'project[end]', mapping: 'end'},{name: 'project[note]', mapping: 'note'},{name: 'project[customer_id]', mapping: 'customer_id'},{name: 'project[company_id]', mapping: 'company_id'},{name: 'project[created_at]', mapping: 'created_at'},{name: 'project[updated_at]', mapping: 'updated_at'},{name: 'project[code]', mapping: 'code'} ]),
+          // turn on remote sorting
+          remoteSort: true,
+          sortInfo: {field: 'id', direction: 'ASC'}
+      });
+
+
+  var clienti=$A(<%= array_or_string_for_javascript(Customer.find(:all).map{|c|c.ragionesociale + ":" +  c.id.to_s}) %>)
+  var project_column_model = new Ext.grid.ColumnModel([
+    {id: 'Codice',hidden:true, header: "#", width: 20, dataIndex: 'id'},
+	{id: 'JobN', header: "Job N.", width: 20, dataIndex: 'project[code]'},
+    {header: 'Titolo', dataIndex: 'project[title]'},
+	{
+		header: 'Cliente',
+		dataIndex: 'project[customer_id]',
+		renderer: function(id, c){
+			var x = clienti.find(function(x){
+				if (id == x.split(":")[1]) 
+					return true
+			});
+			if(!x) return;
+			return x.split(":")[0];
+		}
+	},
+    {header: 'Inizio', dataIndex: 'project[start]',renderer: Ext.util.Format.dateRenderer('d/m/Y')},
+    {header: 'Fine', dataIndex: 'project[end]',renderer: Ext.util.Format.dateRenderer('d/m/Y')},
+    {header: 'Note', dataIndex: 'project[note]'}
+  ]);
+
+
+Ext.onReady(function(){
+        Ext.QuickTips.init();
+		var p = new Ext.Panel({
+		    title: '',
+			border:false,
+		    layout:'fit',
+		    items: [
+				 
+								build_list_commesse(),
+					 
+			
+				new Ext.ux.ManagedIframePanel({
+								defaultSrc:"/invoices/",
+								loadMask:true,
+								 layout:'fit',
+								 height:305,
+								closable:false,
+								renderTo:'invoices-grid',
+								collapsible:true,
+								collapsed:true,
+								title:"Fatture in scadenza"
+							})  
+							,
+			
+				new Ext.ux.ManagedIframePanel({
+								defaultSrc:"/timesheet/",
+								loadMask:true,
+								closable:false,
+								 height:305,
+								renderTo:'timesheet-grid',
+								collapsible:true,
+								collapsed:true,
+								title:"Timesheet"
+							})  
+			]
+		});
+		 
+		p.render(document.body);
+		}
+		
+		);
+
+
+
+
+ 
+  
+ 
+function build_list_commesse(){
+              var ds = project_datastore;
+              var cm = project_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+                  sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                  renderTo:   'project-grid',
+                  title:      'Elenco Commesse Aperte',
+				  header:true,
+				  collapsible:true,
+                  autoWidth:true,
+				  height:220,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  },
+
+                  // inline toolbars
+                  tbar:[{
+                      text:'<%=:grid_new.localize%>',
+                      handler: function(){ window.location.href = '/projects/new'; },
+                      iconCls:'icon_new'
+                  }, '-', {
+                      text:'<%=:grid_edit.localize%>',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                   window.location.href = '/projects/' + selected.data.id + '/edit';
+                                 } else { 
+                                   alert('Please select a row first.');
+                                 }
+                               },
+                      iconCls:'icon_edit'
+                  },
+				  '->'],
+                  bbar: new Ext.PagingToolbar({
+                            pageSize: 5,
+                            store: ds,
+                            displayInfo: true,
+                            displayMsg: 'Record {0} - {1} of {2}',
+                            emptyMsg: "No records found"
+                  }),
+                  plugins:[new Ext.ux.grid.Search({
+                              position:'top',
+							  searchText:'<%=:grid_search.localize%>'
+                          })]
+              });
+
+              // show record on double-click
+              grid.on("rowdblclick", function(grid, row, e) {
+			  
+			  	//se sono iframe...
+				if(is_iframe){
+					parent.Ext.getCmp("west-panel").collapse();
+				}
+                window.location.href = '/projects/' + grid.getStore().getAt(row).id;
+				
+              });
+
+/*			grid.on("rowclick", function(grid, row, e) {
+
+				var tpl = new Ext.XTemplate("Commessa:{'project[title]'}<br>Data Ultima Modifica:{updated_at}<br>Ultimo Utente:{user_id}")
+				tpl.overwrite($("_dettaglio_progetto"),grid.getStore().getAt(row).data);
+				
+				
+              });
+*/
+              ds.load({params: {start: 0, limit:5,fields:"['status_id']",query:1}});
+			  
+			  return grid;
+          } 
+
+
+
+ 
+<% end -%>

@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
+        <title><%= @scope %><%= controller.action_name %></title>
+        <%= stylesheet_link_tag "output.css" %>
+		<%= stylesheet_link_tag "print.css", :media=>"print"%>
+    </head>
+    <body>
+    	<a id="lnkprint" href="#" onclick="window.print()" >stampa</a>
+        <table width="100%" >
+            <tr height="100%">
+                <td>
+                    <%= yield %>
+                </td>
+            </tr>
+           
+        </table>
+    </body>
+	 
+</html>

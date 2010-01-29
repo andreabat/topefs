@@ -1,0 +1,109 @@
+/* Ext.ux.FileTreePanel css file
+ *
+ * vim:sw=2:ts=2:fdc=4 
+ * $Id: filetree.css 72 2008-03-17 00:53:14Z jozo $ 
+ */
+
+/*
+.ux-ff-wrap {
+	position:relative;
+	left:-30px;
+}
+.ux-ff-input {
+	position:absolute;
+
+	opacity:.0;
+	-moz-opacity: 0.0;
+	filter: alpha(opacity=00);
+	cursor:pointer ! important;
+}
+.ux-ff-mask {
+	background-color:transparent;
+	width:30px;
+	position:absolute;
+	left:0;
+	top:0;
+}
+.ux-ff-add-btn-ct {
+	position:absolute;
+	left:30px;
+	top:0;
+}
+.ux-ff-removeall-btn-ct {
+	position:absolute;
+	right:-30px;
+	top:0;
+}
+.ux-ff-upload-btn-ct {
+	position:absolute;
+	right:-2px;
+	top:0;
+}
+*/
+.ux-up-item {
+	line-height:17px;
+	height:17px;
+	cursor:default;
+/*	border: 1px solid transparent; */
+	margin-bottom:1px;
+	position:relative;
+	background-color:#f0f0f0;
+	background-image:url(/images/white_bg.png);
+	background-repeat:no-repeat
+}
+.ux-up-icon-file {
+	width:16px;
+	height:16px;
+	vertical-align:-3px;
+	margin-right:4px;
+	background-image:url(../ext/resources/images/default/tree/leaf.gif);
+	float:left;
+}
+.ux-up-item-selected {
+	/*
+	border-color:#c0c0c0;
+	background-color:#f0f0f0;
+	*/
+}
+.ux-up-indicator {
+	background-color:yellow;
+	height:17px;
+	width:40px;
+	position:absolute;
+	opacity:0.4;
+}
+.ux-up-icon-state {
+	width:16px;
+	float:right;
+	margin-right:2px;
+	cursor:pointer;
+	z-index:-1;
+}
+.ux-up-icon-queued {
+	background-image:url(/images/silk/icons/page_white_get.png);
+}
+.ux-up-icon-uploading {
+	background-image:url(../ext/resources/images/default/grid/wait.gif);
+}
+.ux-up-icon-done {
+	background-image:url(/images/silk/icons/accept.png);
+}
+.ux-up-icon-failed {
+	background-image:url(/images/silk/icons/error.png);
+}
+.ux-up-icon-stopped {
+	background-image:url(/images/silk/icons/stop.png);
+}
+.ux-up-text {
+	float:left;
+}
+.ux-ftm-nodename {
+	color:black;
+	font-weight:bold;
+	cursor:default ! important;
+}
+.folder {
+	background-image:url(../ext/resources/images/default/tree/folder.gif) ! important;
+/*	background-repeat:no-repeat; */
+}
+/* eof */

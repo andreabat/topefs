@@ -1,0 +1,9 @@
+<div id="supplier-form"></div>
+<%= render :partial => 'form_items', :object => :supplier_form_items %>
+<%= ext_form_for :supplier,
+                 :element => 'supplier-form',
+                 :form_items => :supplier_form_items,
+				 :title => (:grid_new.l + ' ' + :l_supplier.l),
+				  :save_callback=> 'function(a,b,c){find_parent_tab({close:true,refresh:true})}',
+				:noback=>true,
+                 :mode => :new %>

@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title>Edit</title>
+  
+  <%= stylesheet_link_tag "../ext/resources/css/ext-all.css" %>
+  <%= stylesheet_link_tag 'xtheme-silverCherry' %>
+  <%= stylesheet_link_tag 'top' %>
+  <%= stylesheet_link_tag 'output' %>
+   <%= javascript_include_tag "../ext/adapter/prototype/prototype.js" %>
+   <%= javascript_include_tag "../ext/adapter/prototype/scriptaculous.js?load=effects" %>
+  <%= javascript_include_tag "../ext/adapter/ext/ext-base.js" %>
+
+  <%= javascript_include_tag "../ext/ext-all-debug.js" %>
+<!--<%= javascript_include_tag "../ext/ext-all.js" %>-->
+  <%= javascript_include_tag "../ext/build/locale/ext-lang-it.js" %>
+  <%= javascript_include_tag "application.js" %>
+  <script>
+  	Ext.onReady(function(){
+			  Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+              Ext.form.Field.prototype.msgTarget = 'side';
+			  var panel = new Ext.Panel( 
+							      	{el:'_editor',autoCreate:true,region:'center',title: 'Modifica Layout File',  autoScroll:false}
+									);
+			  var layout =new Ext.Viewport({
+				            layout:'border',
+							items:[
+									panel,
+									{
+										el:'footer',
+										region:'south',
+										hidden:true
+									}
+								]
+								
+							});
+			 
+						  
+						  
+		htmleditor = new Ext.ux.StyledHtmlEditor({xtype:"htmleditor",
+														id:'htmleditor' ,
+														width:1000,
+														height:500,
+														enableLinks:false,
+														enableFont:false,
+														 fontFamilies:["Verdana"],
+														enableFontSize:false,
+														styles: ['/stylesheets/output.css'] 
+														 })		
+														 panel.add(htmleditor);
+		htmleditor.setValue($("_content").innerHTML)
+		panel.doLayout();
+		htmleditor.tb.insertButton(0,{text:"Salva",iconCls:"icon_new",handler:save_html});
+		//htmleditor.setSize(panel.el.getWidth()-250,100);
+		
+		panel.on('resize',function (self,w,h) {htmleditor.setSize(w,h);});  
+		panel.doLayout();
+		
+	});
+	
+	
+		
+		function save_html(){
+			//gestione salvataggio HTML
+//			debugger;
+//			$("_content").update(htmleditor.getValue());
+//			$("_editor").update("");
+//			$("_content").removeClassName("x-hidden");
+			
+			Ext.Ajax.request({
+				url:"/<%=@object_scope%>/create_document",
+				params:{
+							id:<%=@object.id%>,
+							html:htmleditor.getRawValue(),
+							authenticity_token:'<%=form_authenticity_token%>'
+				},
+				success:function(a,b,c){
+					Ext.Msg.alert("System","File generato.",function(){
+						var r = Ext.decode(a.responseText);
+						window.open("/document/" + r.doctype + "/" + r.filename);
+						//document.location= "/document/" + r.doctype + "/" + r.filename;
+					});
+					
+				},
+				failure:function(a,b,c){
+					Ext.Msg.alert("Errore","Errore in fase di creazione.")
+				}
+				
+			})
+		}
+	
+  </script>
+</head>
+<body>
+
+<div id="_editor"></div>
+
+<div id="_content"  class="x-hidden">
+<%= yield  %>
+</div>
+
+<div id="footer"><center>
+				  <table align="center" class="footer header" border="0">
+                        <tr>
+                            <td align="center">
+                                <%="#{@company.ragionesociale} - #{@company.indirizzo} - #{@company.cap} #{@company.comune} - Tel. #{@company.telefono} - Fax. #{@company.fax} e-mail: #{@company.email}" %>
+                            </td>
+							</tr>
+							<tr>
+                            <td align="center">
+                            	         <%="Partita IVA #{@company.partitaiva} - Iscrizione CCIA/ n.REA #{@company.rea}" %>
+                            </td>
+                        
+						
+                        </tr>
+                    </table>
+</center></div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<div id="company-grid">
+</div>
+<%= ext_datastore_for :company %>
+<% javascript_tag do -%>
+var company_column_model = new Ext.grid.ColumnModel([
+{id: 'id', header: "#", width: 20, dataIndex: 'id'},
+{header: 'Ragionesociale', dataIndex: 'company[ragionesociale]'},
+{header: 'Indirizzo', dataIndex: 'company[indirizzo]'},
+{header: 'Comune', dataIndex: 'company[comune]'},
+{header: 'Cap', dataIndex: 'company[cap]'},
+{header: 'Prov', dataIndex: 'company[prov]'},
+{header: 'Coordinatebancarie', dataIndex: 'company[coordinatebancarie]'},
+{header: 'Telefono', dataIndex: 'company[telefono]'},
+{header: 'Partitaiva', dataIndex: 'company[partitaiva]'},
+{header: 'Codicefiscale', dataIndex: 'company[codicefiscale]'},
+{header: 'Telefono', dataIndex: 'company[telefono]'},
+{header: 'Email', dataIndex: 'company[email]'},
+{header: 'Fax', dataIndex: 'company[fax]'}
+]);
+<% end -%>
+<%= ext_grid_for :company, :element => 'company-grid',
+	:nodblclick=>false,:dbl_handler=>"window.location.href = '/companies/' + grid.getStore().getAt(row).id + '/edit';", 
+	:title=>:listing.l << " " << :l_companies.localize,:add_handler=>"alert('Versione Singola Società')",
+	:width=>"getViewPort(5).width",:height=>"getViewPort(5).height",:page_size=>@default_grid_page_size %>

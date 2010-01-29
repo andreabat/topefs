@@ -1,0 +1,173 @@
+<div id ="role-grid"/>
+
+<div id="user-form"></div>
+	
+ 
+<% javascript_tag do -%>
+
+  var selcm = new Ext.grid.CheckboxSelectionModel();
+  
+  
+  
+  var role_column_model = new Ext.grid.ColumnModel([
+    {id: 'id', header: "#", width: 0,hidden:true, dataIndex: 'id'},
+    {header: 'ruolo', dataIndex: 'name'},
+	selcm
+  ]);
+<% end -%>
+<script type="text/javascript">
+//<![CDATA[
+		  var array = <%=@roles.to_json%>;
+          var role_datastore = new Ext.data.Store({
+                  proxy: new Ext.data.MemoryProxy( array
+                         ),
+                  reader: new Ext.data.JsonReader({
+                              id: 'id' 
+                          },
+                          [ {name: 'id'}, {name: 'name'}])
+              });
+
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+          Ext.onReady(function(){
+			  Ext.QuickTips.init();
+              // turn on validation errors beside the field globally
+              Ext.form.Field.prototype.msgTarget = 'side';
+             
+              var ds = role_datastore;
+
+              var cm = role_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+				  id: "role-grid",
+				  fieldLabel:'<%=:l_roles.l%>',
+                  sm: selcm,
+                //  renderTo:   'role-grid',
+                  title:      '<%=:l_roles.l%>',
+                  width:      540,
+                  height:     208,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  }               });
+
+              // show record on double-click
+              grid.on("rowdblclick", function(grid, row, e) {
+                window.location.href = '/users/' + grid.getStore().getAt(row).id;
+              });
+              ds.load();
+ 
+		  var LIST_URL="/users";
+		  var render_to = "user-form";
+		  
+
+           
+
+              var panel = new Ext.FormPanel({
+                  labelWidth:   75, // label settings here cascade unless overridden
+                  url:          LIST_URL,
+                  frame:         true,
+                  waitMsgTarget: true,
+				  monitorValid:true,
+                  title:         'Creazione Nuovo Utente',
+                  bodyStyle:     'padding:5px 5px 0',
+                  width:         350,
+                  defaults:      {width: 230},
+                  defaultType:   'textfield',
+                  renderTo:      render_to,
+                  baseParams:    {authenticity_token: '<%= "#{form_authenticity_token}" %>'},
+                  items: [ 
+				  			{  fieldLabel: 'Username',  allowBlank: false,  xtype: 'textfield',id:'login',minLength:3,  name: 'user[login]'},
+							{  fieldLabel: 'Nominativo',  allowBlank: false,  xtype: 'textfield',id:'nominativo',minLength:3,  name: 'user[nominativo]'},
+						    {
+						    									   fieldLabel:'Costo Orario',
+						    										xtype:"textfield",
+						    										vtype:'numeric',
+						    										name:'user[hourly_cost]'
+						    								},
+							{  fieldLabel: 'Password',inputType:'password',  allowBlank: false,  xtype: 'textfield',id:'password', minLength:4, name: 'user[password]'},
+							{  fieldLabel: 'Conferma Password',inputType:'password',  allowBlank: false,  xtype: 'textfield',minLength:4,id:'password_confirmation',  name: 'user[password_confirmation]'},
+							
+							{  fieldLabel: 'Attivo',  xtype: 'checkbox',id:'active', inputValue:1, name: 'user[active]'},
+							{xtype:'hidden',name:'roles',id:'roles'}
+							,grid
+						],
+				  listeners:{
+				  				 
+								'clientvalidation':{
+										fn:function(f,ok){
+											var o  =Ext.getCmp("save_btn");
+											 
+											if (f.findById("password").getValue()!=f.findById("password_confirmation").getValue())
+											{
+												ok=false;
+												f.findById("password_confirmation").markInvalid("Conferma password non coincide.")
+												
+											}	
+											if (!f.getForm().isValid())	 ok=false;
+											ok?o.enable():o.disable();	
+										}
+									} 
+						},
+                  buttons: [ { 
+				  				id:'save_btn', 
+								text: 'Crea',  
+								type: 'submit',  
+								handler: function(f,e){ 
+								
+														//creo gli item nascosti
+														
+														
+													 
+														var r = Ext.getCmp("roles");
+														if(r.getValue()!="")
+																	r.setValue(r.getValue().replace(",",""));
+														
+														panel.form.submit({ params: {
+															_method: "POST"
+														},
+																			success:function(a,b,c){
+																				 
+																						Ext.Msg.alert("System","Creato.",function(){document.location=LIST_URL});
+																						
+																				
+				  																	},
+																			failure:function(a,b,c){
+																					if(b.result)
+																					{
+																						Ext.Msg.alert("System","<%= :sys_error.l%>:" + $H(b.result.errors).keys().join("\n") + $H(b.result.errors).values().join("\n"));
+																					}
+																					else
+																						Ext.Msg.alert("System","<%= :sys_error.l%>:" + b.response.responseText);
+																			},
+																			url:LIST_URL + '?format=ext_json', 
+																			waitMsg:'Creazione...'
+																		}); 
+														}
+							 } 
+                           ]
+              });
+					
+					
+					selcm.on("rowselect",function(sm,rowIndex,record){
+								var r = Ext.getCmp("roles");
+		  						r.setValue(r.getValue()+","+record.get("id"));
+								
+					})
+					selcm.on("rowdeselect",function(sm,rowIndex,record){
+		  						var r = Ext.getCmp("roles");
+		  						r.setValue(r.getValue().replace(","+record.get("id"),""));
+					})
+  
+                          
+          });
+
+//]]>
+</script>

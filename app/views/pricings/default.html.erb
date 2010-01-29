@@ -1,0 +1,240 @@
+<span><img src="/images/logos/sx.jpg" class="sx"></span>
+<span><img src="/images/logos/dx.jpg" class="dx"></span>
+
+<div class="body">
+
+<table class=" companyinfo" cellpadding="6" cellspacing="2" width="100%">
+    <tbody>
+        <tr>
+            <td  class="file_logo" valign="top">
+                <img   src="/images/logos/<%=@object.project.company.logo%>">
+            </td>
+            <td  align="right" >
+            	<br><br>
+               <b class="output_ragionesociale"><%=@company.ragionesociale %></b>
+                    <br> <br>
+               <%=@company.indirizzo %>
+                <br>
+               <%=@company.cap %>
+               <%=@company.comune %> - Italia
+                    <br>
+               T. <%=@company.telefono %>
+                    <br>
+               F. <%=@company.fax %><br>
+               P.IVA <%=@company.partitaiva %>
+                    <br>
+                    <%=@company.web %>
+                    <br>
+               
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span style="font-weight: bold;">
+    <br>
+</span>
+<table class="header tableinfo" cellpadding="2" cellspacing="2"  >
+    <tbody>
+        <tr>
+            <td>
+                <table   cellpadding="2" cellspacing="2" class="header tableinfo">
+                    <tbody>
+                        <tr>
+                            <td>
+                                Data
+                            </td>
+                            <td>
+                                <%=@object.created_at.l('%d/%m/%Y') %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Preventivo
+                            </td>
+                            <td  class="output_important">
+                                n. <%=@object.code.rjust(8,"0") %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Job
+                            </td>
+                            <td  class="output_important">
+                                n. <%=@object.project.code.rjust(8,"0")%>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td style="vertical-align: top;" width="40%">
+                Spett.le
+                <br>
+                <b><%=@object.project.customer.ragionesociale %></b>
+            </td>
+        </tr>
+		<tr><td><br></td></tr><tr></tr><tr></tr>
+        <tr>
+            <td>
+                 <%="Da:" if @object.user%>  <%=@object.user.nominativo%>
+            </td>
+            <td>
+                <%="c.a." if @object.people%> <b><%=@object.people %></b>
+            </td>
+        </tr>
+		<tr><td><br></td></tr><tr></tr><tr></tr>
+        <tr>
+            <td colspan="2" rowspan="1">
+                Oggetto: <span style="font-weight: bold;"><%=@object.title %></span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span style="font-weight: bold;">
+    <br>    <br>     <br>
+</span>
+<span style="font-weight: bold;"></span>
+
+    
+    <table class="header tableinfo" cellpadding="2" cellspacing="2" border="0">
+        <tbody>
+            <tr>
+                <td width="65%"><b></b>
+                </td>
+                <td style="text-align: center;" width="5%">
+                   <b>Q.TA'</b>
+                </td>
+                <td  colspan="2" rowspan="1" align="center" style="text-align: center;" width="30%">
+                    <b>IMPORTO</b>
+                </td>
+            </tr>
+            <tr>
+                <td width="65%">
+                </td>
+                <td width="5%">
+                </td>
+                <td width="15%" align="center">
+                    <b>Cad.</b>
+                </td>
+                <td width="15%" align="center">
+                    <b>Totali €</b>
+                </td>
+            </tr>
+			
+			 <% 
+			current_cat = 0
+			@object.pricingitems.find(:all,:order=>"category_id desc").each do |e| 
+			%>
+			<%="<tr><td><b>#{e.category.name}</b></td></tr>" if e.category!=nil && (current_cat!=e.category_id)%>
+			<%current_cat=e.category_id%>
+            <tr>
+                <td> 
+                    <span>
+                        <%=e.description %>
+                    </span>
+                </td>
+				<td align="center">
+					<%="#{number_with_precision(e.quantity,0)}" unless !e.quantity %>
+				</td>
+                <td align="center">
+                    <%="#{number_to_currency(e.price)}" unless !e.quantity %>
+                </td>
+                <td align="center">
+                    <%=number_to_currency e.price * (e.quantity ? e.quantity : 1) %>
+                </td>
+                 
+            </tr>
+			            <%end %>
+            <tr>
+                <td rowspan="1" colspan="3">
+                    <%=@object.notes %>
+                </td>
+                 
+            </tr>
+            <tr>
+                <td  colspan="3">
+                	<br>
+					<br>
+                    <b>TOTALE PREVENTIVO</b>
+                    <br>
+                </td>
+                 
+                 
+                <td align="center"><br>
+                    <span style="font-weight: bold;"><%= number_to_currency @object.total%></span>
+                </td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td colspan="7">
+                  <i> i prezzi indicati si intendono al netto
+                    dell'IVA.</i> 
+                </td>
+                 
+            </tr>
+        </tbody>
+    </table>
+<br><br><br>
+<table  class="header tableinfo" cellpadding="2" cellspacing="2" border="0">
+    <tbody>
+          <tr>
+            <td class="titoletto">
+                <span style="font-style: italic; font-weight: bold;">Consegna:</span>
+            </td>
+            <td  >
+                <%=@object.delivery %>
+            </td>
+        </tr>
+        <tr>
+            <td style="font-weight: bold;" class="titoletto" width="20%">
+                <span style="font-style: italic;">Pagamento:</span>
+            </td>
+            <td  >
+                <%=@object.paymentmethod.paymentmethod rescue nil %>
+            </td>
+        </tr>
+       
+        <tr>
+            <td class="titoletto">
+                <span style="font-style: italic;"><span style="font-weight: bold;">Fatturazione:</span></span>
+                <span style="font-weight: bold; font-style: italic;"></span>
+            </td>
+            <td  >
+                <%="#{@object.invoicing} %" unless !@object.invoicing %>
+            </td>
+        </tr>
+		
+        <tr>
+            <td colspan="2" rowspan="2"  >
+            	<br>
+                Nell'attesa
+                di ricevere la presente lettera controfirmata per accettazione,
+                porgiamo distinti saluti
+            </td>
+        </tr>
+    </tbody>
+</table>
+        <br><br><br>
+        <table class="header companyinfo" border="0" cellpadding="2" cellspacing="2" width="100%">
+            <tbody>
+                <tr>
+                    <td width="50%" align="center">
+                        
+                            <span class="titoletto"  style="font-style: italic;">
+                                Timbro e firma
+                            </span>
+                            <br>
+                            <br><br>
+                            <hr style="width:200px">
+                            <center style="font-style: italic;font-weigth:bold">
+                                <span>PER ACCETTAZIONE</span>
+                            </center>
+                        </fieldset>
+                    </td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: bold;"><%=@company.ragionesociale %></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+</div>

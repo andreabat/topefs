@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+</head>
+<body>
+
+&nbsp;<br>
+
+<table style="text-align: left; width: 700px; height: 136px;" border="1" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+    <tr>
+
+      <td style="width: 581px;"><img style="width: 32px; height: 32px;" alt="" src="file:///images/logos/%3C%=@object.project.company.logo%%3E"></td>
+
+      <td style="width: 99px;"><b>&lt;%=@company.ragionesociale
+%&gt;<br>
+
+      </b><b>&lt;%=@company.indirizzo %&gt;<br>
+
+      </b><b>&lt;%=@company.cap %&gt; </b><b>&lt;%=@company.comune
+%&gt;<br>
+
+T. </b><b>&lt;%=@company.telefono %&gt;<br>
+
+      </b><b>F. </b><b>&lt;%=@company.fax
+%&gt;<br>
+
+      </b><b>P.IVA </b><b>&lt;%=@company.partitaiva
+%&gt;<br>
+
+&lt;%=@company.web%&gt;<br>
+
+      </b><br>
+
+      <br>
+
+      <br>
+
+      <br>
+
+      <br>
+
+      </td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<br>
+
+<span style="font-weight: bold;"> <br>
+
+</span>
+<table style="text-align: left; width: 100%;" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+    <tr>
+
+      <td>
+      <table style="text-align: left; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+
+        <tbody>
+
+          <tr>
+
+            <td>Data</td>
+
+            <td><span style="font-weight: bold;" editable="true"></span>&lt;%=@object.created_at.l(:long)
+%&gt;</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Preventivo</td>
+
+            <td>&lt;%=@object.code%&gt;</td>
+
+          </tr>
+
+          <tr>
+
+            <td>Job</td>
+
+            <td>&lt;%=@object.project.code%&gt;</td>
+
+          </tr>
+
+        </tbody>
+      </table>
+
+      </td>
+
+      <td style="vertical-align: top;">Spett.le<br>
+
+      <b>&lt;%=@object.project.customer.ragionesociale %&gt;</b>
+      </td>
+
+    </tr>
+
+    <tr>
+
+      <td><br>
+
+      <br>
+
+      </td>
+
+      <td> c.a. <b>&lt;%=@object.people %&gt;</b> </td>
+
+    </tr>
+
+    <tr>
+
+      <td colspan="2" rowspan="1">Oggetto: <span style="font-weight: bold;">&lt;%=@object.title%&gt;</span></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<span style="font-weight: bold;"> <br>
+
+</span><span style="font-weight: bold;"></span>
+<hr style="width: 100%; height: 2px;">
+<fieldset><legend>Preventivo</legend>
+<table style="text-align: left; width: 100%;" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+&lt;% @object.pricingitems.each do |e|%&gt;
+&lt;%end%&gt;
+--&gt; <tr>
+
+      <td>
+DESCRIZIONE</td>
+
+      <td style="text-align: center;">Q.TA'</td>
+
+      <td colspan="2" rowspan="1">IMPORTO</td>
+
+    </tr>
+
+    <tr>
+
+      <td></td>
+
+      <td></td>
+
+      <td>Cad</td>
+
+      <td>Totale</td>
+
+    </tr>
+
+    <tr>
+
+      <td> <span> &lt;%="N.
+#{number_with_precision(e.quantity,0)}" unless !e.quantity%&gt;
+&lt;%=e.description %&gt; <br>
+
+&lt;%="Costo cad. #{number_to_currency(e.cost)}" unless
+!e.quantity%&gt; </span> </td>
+
+      <td> &lt;%=" "%&gt; </td>
+
+      <td align="right"> <b>&lt;%=number_to_currency
+e.cost * (e.quantity ? e.quantity : 1)%&gt;</b> </td>
+
+      <td></td>
+
+    </tr>
+
+    <tr>
+
+      <td rowspan="1" colspan="3">
+&lt;%=@object.notes %&gt; </td>
+
+      <td></td>
+
+    </tr>
+
+    <tr>
+
+      <td style="width: 70%;"> TOTALE PREVENTIVO<br>
+
+      </td>
+
+      <td class="titoletto" style="width: 20%;">
+totale imponibile </td>
+
+      <td style="width: 263px;" align="right"><b><br>
+
+      </b></td>
+
+      <td><span style="font-weight: bold;">&lt;%=totale%&gt;</span></td>
+
+    </tr>
+
+  </tbody><tbody>
+    <tr>
+      <td>i prezzi indicati si intendono al netto
+dell'IVA.</td>
+
+      <td></td>
+
+      <td></td>
+
+      <td></td>
+
+      <td></td>
+
+      <td></td>
+
+    </tr>
+  </tbody>
+</table>
+
+</fieldset>
+
+<br>
+
+<table style="text-align: left;" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+    <tr>
+
+      <td colspan="2" rowspan="1"> Vi preghiamo di
+riportare il numero di ordine sulla Vs fattura </td>
+
+    </tr>
+
+    <tr>
+
+      <td style="font-weight: bold;" class="titoletto"><span style="font-style: italic;">Pagamento</span> </td>
+
+      <td class="mini_header">
+&lt;%=@object.paymentmethod.paymentmethod rescue nil %&gt; </td>
+
+    </tr>
+
+    <tr>
+
+      <td class="titoletto"> <span style="font-style: italic; font-weight: bold;">Fatturazione</span>
+      </td>
+
+      <td class="mini_header"> &lt;%=@object.delivery
+%&gt; </td>
+
+    </tr>
+
+    <tr>
+
+      <td class="titoletto"> <span style="font-style: italic;"><span style="font-weight: bold;">Consegna</span></span><span style="font-weight: bold; font-style: italic;"></span>
+      </td>
+
+      <td class="mini_header">
+&lt;%="#{@object.invoicing} %" unless !@object.invoicing %&gt; </td>
+
+    </tr>
+
+    <tr>
+
+      <td colspan="2" rowspan="1" class="titoletto">Nell'attesa
+di ricevere la presente lettera controfirmata per accettazione,
+porgiamo distinti saluti</td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+<div style="float: left;">
+<div style="text-align: center;"><br>
+
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+
+  <tbody>
+
+    <tr>
+
+      <td>
+      <fieldset style="width: 366px;">
+      <div style="text-align: center;"> </div>
+      <legend class="titoletto"> <span style="font-weight: bold; font-style: italic;">Timbro e firma</span>
+      </legend><br>
+
+
+      <br>
+
+      <hr>
+      <center style="font-style: italic;"><span>PER
+ACCETTAZIONE</span></center>
+
+      </fieldset>
+
+      </td>
+
+      <td style="text-align: center;"><span style="font-weight: bold;">&lt;%=@company.ragionesociale%&gt;</span></td>
+
+    </tr>
+
+  </tbody>
+</table>
+
+</div>
+
+</div>
+
+</body>
+</html>

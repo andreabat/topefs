@@ -1,0 +1,164 @@
+<img style="width: 32px; height: 32px;" alt="" src="/images/logos/<%=@object.project.company.logo%>">
+<br>
+<br>
+<span style="font-weight: bold;">
+    <br>
+</span>
+<table style="text-align: left; width: 100%;" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td>
+                <span style="font-weight: bold;" editable="true">ORDINE DI
+                    LAVORO&nbsp;</span>
+                <%=@object.created_at.year %>
+            </td>
+            <td>Spett.le<br>
+                <b><%=@object.supplier.ragionesociale %></b>
+            </td>
+        </tr>
+        <tr>
+            <td><br><br>
+            </td>
+            <td>
+                c.a. <b><%=@object.people %></b>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span style="font-weight: bold;">
+    <br>
+</span>
+<table style="text-align: left; width: 100%;" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td class="titoletto ">
+                data ordine
+            </td>
+            <td class="titoletto">
+                n.ordine
+            </td>
+            <td  class="titoletto">
+                n. job
+            </td>
+            <td class="titoletto">
+                oggetto
+            </td>
+        </tr>
+        <tr>
+            <td class="mini_header">
+                <%=@object.created_at.l("%d-%m-%Y") %>
+            </td>
+            <td class="mini_header">
+                <%=@object.code %>
+            </td>
+            <td class="mini_header">
+                <%=@object.project.title %>
+            </td>
+            <td class="mini_header">
+                <%=@object.title %>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<span style="font-weight: bold;"></span>
+<hr style="width: 100%; height: 2px;">
+<fieldset>
+    <legend style="caption-side: left;" class="titoletto">
+        descrizione
+        ordine
+    </legend>
+    <br>
+    <table style="text-align: left; width: 100%;" cellpadding="2" cellspacing="2">
+        <tbody>
+             <!-- QUI VA ITEMS
+			 -->
+			  <% @object.orderitems.each do |e|%>
+			  		<tr>
+			  			<td>
+			  				<span>
+			  				<%="N. #{number_with_precision(e.quantity,0)}" unless !e.quantity%> 
+			  				<%=e.description %>
+							<br>
+							<%="Costo cad. #{number_to_currency(e.cost)}" unless !e.quantity%>
+							</span>
+			  			</td>
+						<td>
+							<%=" "%>
+						</td>
+						<td align="right">
+							<b><%=number_to_currency e.cost * (e.quantity ? e.quantity : 1)%></b>
+							
+						</td>
+			  			</tr>
+			   <%end%>
+            <tr>
+                <td colspan="2">
+                    <%=@object.notes %>
+                </td>
+                 
+                <td style="width: 263px;">
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 70%">
+                    <br>
+                </td>
+                <td class="titoletto" style="width:20%" >
+                    totale imponibile
+                </td>
+                <td style="width: 263px;" align="right"><b>
+                     <%=number_to_currency @object.total %>
+					</b>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+</fieldset>
+&nbsp;
+<br>
+<table style="text-align: left;" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td colspan="2" rowspan="1" >
+                Vi preghiamo di riportare  il numero di ordine sulla Vs fattura
+            </td>
+        </tr>
+        <tr>
+            <td  class="titoletto">
+                mod. pagamento
+            </td>
+            <td  class="mini_header">
+                <%=@object.paymentmethod.paymentmethod %>
+            </td>
+        </tr>
+        <tr>
+            <td  class="titoletto">
+                consegna
+            </td>
+            <td class="mini_header" >
+                <%=@object.delivery %>
+            </td>
+        </tr>
+        <tr>
+            <td class="titoletto">
+                IVA
+            </td>
+            <td class="mini_header">
+                <%="#{@object.vat} %" unless !@object.vat %>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div style="float:right">
+    <fieldset style="width: 366px;" >
+        <legend class="titoletto">
+            FIRMA
+        </legend>
+        <br>
+        <br>
+        <hr>
+		<center><span><%="#{@company.ragionesociale}"%></span></center>
+         
+    </fieldset>
+</div>

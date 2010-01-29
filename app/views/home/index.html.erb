@@ -1,0 +1,52 @@
+<% @scope = "Riepilogo" %>
+
+<div id="home_attivita_commesse" class="background_attivita_commesse">
+	<ul class="lista_attivita">
+			<% if (current_user.has_role?("admin")||current_user.has_role?("account")) %>
+					<li><a iconCls='icon_commesse' class="link_action" action="/projects/new" href="#"><%=:create.l%> <%=:l_project.l%></a></li>
+			<%end%>
+		<li><a  iconCls='icon_commesse' class="link_action" action="/projects/" href="#"><%=:search.l_with_args({:item=>"le"})%> <%=:l_projects.l%></a></li>
+	</ul>
+</div>
+
+
+
+<div id="home_attivita_clienti" class="background_attivita_clienti">
+	<ul class="lista_attivita">
+		<li><a  iconCls='icon_clienti' class="link_action" action="/customers/" href="#"><%=:search.l_with_args({:item=>"i"})%> <%=:l_customers.l%></a></li>
+		<% if (current_user.has_role?("admin")||current_user.has_role?("account")) %>
+			<li><a iconCls='icon_clienti'  class="link_action" action="/customers/new" href="#"><%=:create.l%> <%=:l_customer.l%></a></li>
+		<%end%>
+	</ul>
+</div>
+
+<div id="home_attivita_fornitori" class="background_attivita_fornitori">
+	<ul class="lista_attivita">
+		<li><a iconCls='icon_fornitori'  class="link_action" action="/suppliers/" href="#"><%=:search.l_with_args({:item=>"i"})%> <%=:l_suppliers.l%></a></li>
+		<% if (current_user.has_role?("admin")||current_user.has_role?("account")) %>
+		<li><a iconCls='icon_fornitori' class="link_action" action="/suppliers/new" href="#"><%=:create.l%> <%=:l_suppliers.l%></a></li>
+		<%end%>
+	</ul>
+</div>
+
+<div id="home_attivita_reports" class="background_attivita_report">
+	 
+	<ul class="lista_attivita"><!--
+		<li><a iconCls='icon_report' class="link_action" action="/projects/all" href="#">Report 1</a></li>
+		<li><a iconCls='icon_report' class="link_action" action="/projects/all" href="#">Report 2</a></li>
+		<li><a iconCls='icon_report' class="link_action" action="/projects/all" href="#">Report 3</a></li>
+		<li><a iconCls='icon_report' class="link_action" action="/projects/all" href="#">Report 4</a></li>				-->
+	</ul>
+ 
+</div>
+ 
+<% if (current_user.has_role?("admin")) %>
+ <div id="home_attivita_admin" class="background_attivita_admin">
+	<ul class="lista_attivita">
+		<!--<li><a iconCls='icon_admin' class="link_action" action="/admin/backup" href="#">Esegui backup dei dati</a></li>-->
+		<li><a iconCls='icon_admin' class="link_action" action="/companies/" href="#">Gestisci Società</a></li>
+		<li><a iconCls='icon_admin' class="link_action" action="/users/" href="#">Gestisci gli utenti</a></li>
+	</ul> 	
+	
+ 	</div>
+	<%end%>	

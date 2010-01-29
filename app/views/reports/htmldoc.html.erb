@@ -1,0 +1,15 @@
+<h3>Showing: <%= pluralize(@items.size, 'item') %></h3>
+<table><tbody>
+<tr>
+<th>Field1</th>
+<th>Field1</th>
+<th>Field1</th>
+</tr>
+<% @items.each do |item| %>
+<tr>
+<td><%= item.ragionesociale %></td>
+<td><%= item.ragionesociale %></td>
+<td><%= item.ragionesociale %></td>
+</tr>
+<% end %>
+</tbody></table>

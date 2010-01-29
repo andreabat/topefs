@@ -1,0 +1,50 @@
+var g_menu = new Ext.menu.Menu({
+				                id:'grid-ctx',
+				                items: [{
+				                    text: '<%= :back.l + " " +  :l_project.l%>',
+				                    iconCls: 'new-tab',
+				                    scope:this,
+				                    handler: function(){
+										if(!is_iframe)
+					                        document.location = "/projects/<%=@project.id rescue nil%>"
+										else
+											parent.interpret_intention("/projects/<%=@project.id rescue nil%>")
+				                    }
+				                },{
+				                    iconCls: 'new-win',
+				                    text: '<%= :back.l + " " +  :l_budget.l%>',
+				                    scope:this,
+				                    handler: function(){
+										if(!is_iframe)
+											document.location = "/budgets/<%=@project.id rescue nil%>/budget/"+		grid.store.getAt(index).json.budget_id;
+										else
+											parent.interpret_intention("/budgets/<%=@project.id rescue nil%>/budget/"+		grid.store.getAt(index).json.budget_id);
+				                    }
+				                } ]
+				            });
+
+grid.on('rowcontextmenu', 
+			  function(grid, index, e){
+        				if(!this.menu){ // create context menu on first right click
+        					 this.onContextHide = function(){
+												        if(this.ctxRow){
+												            Ext.fly(this.ctxRow).removeClass('x-node-ctx');
+												            this.ctxRow = null;
+												        }
+												    }
+				            this.menu = g_menu;
+				            this.menu.on('hide', this.onContextHide, this);
+					        }
+        e.stopEvent();
+        if(this.ctxRow){
+            Ext.fly(this.ctxRow).removeClass('x-node-ctx');
+            this.ctxRow = null;
+        }
+        this.ctxRow = this.view.getRow(index);
+        this.ctxRecord = this.store.getAt(index);
+        Ext.fly(this.ctxRow).addClass('x-node-ctx');
+        this.menu.showAt(e.getXY());
+
+   
+	
+	},grid);

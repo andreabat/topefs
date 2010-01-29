@@ -1,0 +1,274 @@
+body {
+	
+}
+
+p.logo{
+	font-family:verdana;
+	font-size:20px;
+	font-style:normal;
+	
+} 
+
+.lista_attivita {
+	margin-top:5px;
+	margin-bottom:10px;
+	margin-left:15px;
+	list-style-type:square;
+	font-size:10px;
+}
+.link_action{
+	text-decoration:none;
+	border:1px ;
+	width:100px;
+}
+
+.link_action:hover {
+	background:#DFE8F6 none repeat scroll 0%;
+	border:1px dotted #A3BAE9;
+	text-decoration:none;
+}
+
+div.timesheet{
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	background-image: url(../images/date.png) ;
+	height:200px;
+}
+
+div.finance{
+	background-repeat:no-repeat;
+	background-position:bottom right;
+	background-image: url(../images/finance.png) ;
+	height:400px;
+}
+
+
+div.commesse{
+	background-repeat:no-repeat;
+	background-position:top right;
+	background-image: url(../images/commesse.png) ;
+	height:130px;
+}
+
+
+.icon_clienti{
+	background-image: url(../images/clienti.png) ;
+	background-repeat:no-repeat;
+	
+}
+
+.background_attivita_clienti{
+	background-image: url(../images/clienti_medium.png) ;
+	background-repeat:no-repeat;
+	background-position:right;
+}
+
+
+.icon_commesse{
+	background-image: url(../images/commesse_small.png) ;
+	background-repeat:no-repeat;
+}
+
+.background_attivita_commesse{
+	background-image: url(../images/commesse_medium.png) ;
+	background-repeat:no-repeat;
+	background-position:right;
+}
+
+.icon_fornitori{
+	background-image: url(../images/fornitore_small.png) ;
+	background-repeat:no-repeat;
+}
+
+.background_attivita_fornitori{
+	background-image: url(../images/fornitore_medium.png) ;
+	background-repeat:no-repeat;
+	background-position:right;
+}
+
+.icon_report{
+	background-image: url(../images/report_small.png) ;
+	background-repeat:no-repeat;
+}
+
+.background_attivita_report{
+	background-image: url(../images/report_medium.png) ;
+	background-repeat:no-repeat;
+	background-position:right;
+}
+.icon_admin{
+	background-image: url(../images/administration_small.png) ;
+	background-repeat:no-repeat;
+}
+
+.background_attivita_admin{
+	background-image: url(../images/administration_medium.png) ;
+	background-repeat:no-repeat;
+	background-position:right;
+}
+.icon_new ,.add{
+	padding-left: 19px;
+	background-position: 1px 50%;
+	background-repeat: no-repeat;
+	background-image:url(../images/active_scaffold/default/add.gif)  !important;
+
+}
+.icon_delete ,.delete{
+	padding-left: 19px;
+	background-position: 1px 50%;
+	background-repeat: no-repeat;
+	background-image:url(/images/delete.gif)  !important;
+
+}
+.icon_edit,.edit{
+	padding-left: 19px;
+	background-position: 1px 50%;
+	background-repeat: no-repeat;
+	background-image:url(../images/active_scaffold/default/magnifier.png)  !important;
+
+}
+
+#document-form  form	 {
+margin-left:2px;
+width:80%;
+}
+#document-form  input{
+	width:20px
+}
+ 
+div.fileinputs {
+	position: relative;
+}
+
+div.fakefile {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	z-index: 1;
+}
+
+input.file {
+	position: relative;
+	text-align: right;
+	-moz-opacity:0 ;
+	filter:alpha(opacity: 0);
+	opacity: 0;
+	z-index: 2;
+}
+
+
+.finance_alert{
+	color:red;
+}
+
+
+.finance_ok{
+	color:green;
+
+}
+
+.tarea{
+	 width: 300px;
+    height: 200px;
+}
+
+.portal  { width:600px;height:220px;overflow:hidden;}
+
+
+.x-view-over{
+    border:1px solid #dddddd;
+    background: #efefef url(/images/silverCherry/grid_row-over.gif) repeat-x left top;
+	padding: 4px;
+}
+
+.x-view-selected{
+	background: #eff5fb url(images/selected.gif) no-repeat right bottom;
+	border:1px solid #99bbe8;
+	padding: 4px;
+}
+.thumb-wrap{
+	margin: 4px;
+	margin-right: 0;
+	padding: 5px;
+}
+
+
+
+.icon_coins{
+	background-image: url(../images/coins.png) ;
+	background-repeat:no-repeat;
+	
+}
+
+.icon_book{
+	background-image: url(../images/book_edit.png) ;
+	background-repeat:no-repeat;
+	
+}
+.icon_calendar{
+	background-image: url(../images/calendar.png) ;
+	background-repeat:no-repeat;
+	
+}
+.icon_calculator{
+	background-image: url(../images/calculator.png) ;
+	background-repeat:no-repeat;
+	
+}
+.icon_documents{
+	background-image: url(../images/documents.png) ;
+	background-repeat:no-repeat;
+	
+}
+
+.icon_euro{
+	background-image: url(../images/money_euro.png)   !important;
+	background-repeat:no-repeat;
+	
+}
+
+.icon_ordini{
+	background-image: url(../images/money_delete.png)   !important;
+	background-repeat:no-repeat;
+}
+
+.icon_incassi{
+	background-image: url(../images/money.png)   !important;
+	background-repeat:no-repeat;
+}
+
+.icon_preventivi{
+	background-image: url(../images/note_edit.png)   !important;
+	
+	background-repeat:no-repeat;
+}
+
+
+.icon_save{
+	background-image: url(../images/tick.png)  !important;
+	background-repeat:no-repeat;
+}
+.icon_zoom{
+	background-image: url(../images/zoom.png)  !important;
+	background-repeat:no-repeat;
+}
+.icon_asterisk{
+	background-image: url(../images/asterisk.png)  !important;
+	background-repeat:no-repeat;
+}
+.icon_wand{
+	background-image: url(../images/wand.png)  !important;
+	background-repeat:no-repeat;
+}
+.icon_house{
+	background-image: url(../images/house.png)  !important;
+	background-repeat:no-repeat;
+}
+.icon_lock{
+	background-image: url(../images/lock.png)  !important;
+	background-repeat:no-repeat;
+}
+.icon_duplicate{
+	background-image: url(../images/copy.png)  !important;
+	background-repeat:no-repeat;
+}

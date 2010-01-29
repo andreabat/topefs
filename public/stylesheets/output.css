@@ -1,0 +1,73 @@
+body {line-height: 1.25; font-family:verdana ;font-size:12px}
+div.body {
+	width:20.997cm;
+	height:29.701cm;
+	margin: 2cm 0.8cm 0.5cm 0.8cm;
+	overflow:hidden;
+	background-color:green;
+}
+
+
+
+
+table {
+/*	border:double*/
+
+}
+table.header {
+	text-align: left; width: 100%;
+	
+	
+}
+.footer {
+	color:#D56666;
+	font-size:9px;
+	
+}
+.output_important {
+	font-weight:bold;
+}
+.output_ragionesociale{
+	color:#A50000	
+}
+
+.file_logo{
+	
+}
+
+.companyinfo{
+	font-size:12px;
+	font-family:"Verdana"
+}
+.tableinfo{
+	font-size:12px;
+
+	font-family:"Verdana"
+	
+}
+
+td.mini_header{
+	border:inset;
+	border-width:thin;
+	border-bottom:0;
+	border-right:0;
+	font-size:12px
+}
+.titoletto{
+	color:#000000;
+	font-weight:bold;
+	font-size:smaller;
+	
+}
+
+img.sx{
+		position:absolute;
+		top:0px;
+		left:0px;
+	}
+	
+	img.dx{
+		position:absolute;
+		top:17.495cm;
+		left:20.5cm;
+	}

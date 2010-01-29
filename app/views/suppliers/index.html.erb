@@ -1,0 +1,116 @@
+
+<br>
+<div id="supplier-grid"></div>
+<%= ext_datastore_for :supplier %>
+<% javascript_tag do -%>
+  var supplier_column_model = new Ext.grid.ColumnModel([
+    {id: 'id', header: "#", width: 20, dataIndex: 'id'},
+    {header: 'Ragione Sociale', dataIndex: 'supplier[ragionesociale]'},
+    {header: 'Indirizzo', dataIndex: 'supplier[indirizzo]'},
+    {header: 'Comune', dataIndex: 'supplier[comune]'},
+    {header: 'Cap', dataIndex: 'supplier[cap]'},
+    {header: 'Prov', dataIndex: 'supplier[prov]'},
+    {header: 'Telefono', dataIndex: 'supplier[telefono]'},
+    {header: 'Fax', dataIndex: 'supplier[fax]'}
+  ]);
+<% end -%>
+<script type="text/javascript">
+//<![CDATA[
+          Ext.onReady(function(){
+
+              Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+
+              var ds = supplier_datastore;
+
+              var cm = supplier_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+                  loadMask:true,
+                  sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                  renderTo:   'supplier-grid',
+                  title:      'Elenco Fornitori',
+                  id:         null,
+                  width:      getViewPort(5).width,
+                  height:     getViewPort(5).height,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  },
+
+                  // inline toolbars
+                  tbar:[{
+                      text:'Aggiungi',
+                      tooltip:'Create new Supplier',
+                      handler: function(){build_parent_tab('/suppliers/new','Crea Fornitore')},
+                      iconCls:'add'
+                  }, '-', {
+                      text:'Modifica',
+                      tooltip:'Edit selected Supplier',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                   build_parent_tab('/suppliers/' + selected.data.id + '/edit','Modifica ' + selected.data['supplier[ragionesociale]'])
+                                 } else { 
+                                   alert('Selezionare una riga.');
+                                 }
+                               },
+                      iconCls:'edit'
+                  },'-',{
+                      disabled:true,
+                      text:'Delete...',
+                      tooltip:'Delete selected Supplier',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                   if(confirm('Really delete?')) {
+                                      var conn = new Ext.data.Connection();
+                                      conn.request({
+                                          url: '/suppliers/' + selected.data.id,
+                                          method: 'POST',
+                                          params: { _method: 'DELETE',
+                                                    authenticity_token: '686360c20e00f607e1f109172dfde526436cab61'
+                                                  },
+                                          success: function(response, options){ ds.load(); },
+                                          failure: function(response, options){ alert('Delete operation failed.'); }
+                                      });
+                                   }
+                                 } else { 
+                                   alert('Selezionare una riga.');
+                                 }
+                               },
+                      iconCls:'remove'
+                  },'->'],
+                  bbar: new Ext.PagingToolbar({
+                            pageSize: <%=@default_grid_page_size%>,
+                            store: ds,
+                            displayInfo: true,
+                            displayMsg: 'Record {0} - {1} of {2}',
+                            emptyMsg: 'Nessun record trovato.'
+                  })
+                  ,plugins:[new Ext.ux.grid.Search({position:'top'})]
+              });
+
+              // show record on double-click
+              grid.on('rowdblclick', function(grid, row, e) {
+                build_parent_tab('/suppliers/' + grid.getStore().getAt(row).id,'Modifica' +  grid.getStore().getAt(row).get('supplier[ragionesociale]'))
+              });
+              ds.baseParams={fields:'',query:''}
+              ds.load({
+                          params: { 
+                                    start: 0, 
+                                    limit:<%=@default_grid_page_size%> ,
+                                    fields:'',
+                                    query:''
+                                    
+                                    }
+                        });
+
+          });
+
+//]]>
+</script>

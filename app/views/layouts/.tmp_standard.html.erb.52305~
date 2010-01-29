@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+  <title><%= @scope %><%= ("a_" + controller.action_name).to_sym.l("") %> <%= ("l_" + controller.controller_name.singularize).to_sym.l("")%></title>
+
+ 	<link rel="stylesheet" type="text/css" href="http://extjs.cachefly.net/ext-2.2/resources/css/ext-all.css" />  
+  <%= stylesheet_link_tag 'ext_scaffold','extras','top', 'xtheme-silverCherry', :cache => "cache/all"%>
+
+   <%= javascript_include_tag "../ext/adapter/prototype/prototype.js", "../ext/adapter/prototype/scriptaculous.js?load=effects",:cache=>"cache/all"%>
+<!--  	<script type="text/javascript" src="http://extjs.cachefly.net/builds/ext-cdn-8.js"></script>-->
+
+   <%= javascript_include_tag "../ext/adapter/ext/ext-base.js", "../ext/ext-all.js",	 "ext_datetime.js", "ext_searchfield.js",
+								"../ext/build/locale/ext-lang-it.js","extras-min.js","application-min.js",
+								 :cache => "cache/all"
+	%>
+  <script>
+  	var is_iframe= (parent!=window)
+  </script>
+  <style>
+  	.x-date-picker{width:175px;}
+  </style>
+  <script>
+  	Ext.onReady(function(){Ext.DatePicker.prototype.internalRender = true;})
+	function duplicate(id){
+	Ext.Ajax.request({
+									  	url:"/projects/duplicate/" +  id,
+										method: 'GET',
+										success:function(){
+											project_datastore.load({
+					                          params: { 
+					                                    start:0, 
+					                                    limit:<%=@default_grid_page_size%> ,
+					                                    fields:'',
+					                                    query:''
+					                                    
+					                                    }
+					                        });
+										},
+										failure:function(){
+											alert("error")
+										}
+									  })
+}
+  </script>
+</head>
+<body>
+
+<div style="padding-left:20px">
+<div><p style="color: green" class="x-hidden" id="flash-message"><%= flash[:notice] %></p></div>
+<%= yield  %>
+</div>
+
+</body>
+</html>

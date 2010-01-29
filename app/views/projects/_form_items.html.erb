@@ -1,0 +1,55 @@
+
+ <%= select :project, :customer_id,
+       Customer.find(:all).collect {|c| [ c.ragionesociale, c.id ] },
+       { :include_blank => true } %>
+
+
+ <%= select :project, :status_id,
+       Status.find(:all).collect {|c| [ c.status, c.id ] },
+       { :include_blank => true } %>
+	   
+	<%= select :project, :company_id,
+       Company.find(:all).collect {|c| [ c.ragionesociale, c.id ] },
+       { :include_blank => false } %>   
+	   
+<% javascript_tag do -%>
+
+  var <%= "#{form_items}" %> = [
+  	<%= ext_field(:field_label => 'Nr.Job', :name => 'project[code]', :xtype => :text_field,:disabled=>true) %>,
+    <%= ext_field(:field_label => 'Nome', :name => 'project[title]', :xtype => :text_field,:allow_blank=>false) %>,
+    <%= ext_field(:field_label => 'Inizio', :name => 'project[start]', :xtype => :date_select, :format => 'd-m-Y' , :altFormats => 'Y-m-d',:allow_blank=>false) %>,
+    <%= ext_field(:field_label => 'Fine', :name => 'project[end]', :xtype => :date_select, :format => 'd-m-Y' , :altFormats => 'Y-m-d')   %>,
+    <%= ext_field(:field_label => 'Note', :name => 'project[note]', :xtype => :text_area) %>,
+	{ fieldLabel:    'Cliente',
+      xtype:         'combo',
+      triggerAction: 'all',
+	  allowBlank:false,
+      typeAhead:      true,
+      forceSelection: true,
+	  transform:	  'project_customer_id',
+	  name:				'project[customer_id]',
+      lazyRender:     true
+	  
+    },
+	{ fieldLabel:    'Società',
+      xtype:         'combo',
+      triggerAction: 'all',
+      typeAhead:      true,
+      forceSelection: true,
+	  transform:	  'project_company_id',
+	  name:				'project[company_id]',
+      lazyRender:     true
+    },
+	{ fieldLabel:    'Stato',
+      xtype:         'combo',
+      triggerAction: 'all',
+      typeAhead:      true,
+      forceSelection: true,
+	  transform:	  'project_status_id',
+	  name:				'project[status_id]',
+      lazyRender:     true
+    }
+  ];
+  
+ 
+<% end -%>

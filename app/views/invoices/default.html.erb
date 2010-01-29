@@ -1,0 +1,183 @@
+<table class="header companyinfo tableinfo" style="width: 100%;"  cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td  class="file_logo" valign="top">
+                <img   src="/images/logos/<%=@object.project.company.logo%>">
+				<br>
+				Spett.le<br>
+				<b><%=@object.project.customer.ragionesociale %></b>
+                    <br>
+               <%=@object.project.customer.indirizzo %>
+                <br>
+               <%=@object.project.customer.cap %>
+               <%=@object.project.customer.comune %>
+                    <br>
+			   <%= "C.F. #{@object.project.customer.codicefiscale}" if @object.project.customer.codicefiscale  %>
+			   <%= "P.I. #{@object.project.customer.partitaiva}" if @object.project.customer.partitaiva  %>
+                    <br>
+                    <%="c.a. #{@object.people}" if @object.people!="" %>
+                    <br>
+            </td>
+            <td  align="right" >
+               <b><%=@company.ragionesociale %></b>
+                    <br>
+               <%=@company.indirizzo %>
+                <br>
+               <%=@company.cap %>
+               <%=@company.comune %>
+                    <br>
+               T. <%=@company.telefono %>
+                    <br>
+               F.<%=@company.fax %><br>
+               P.IVA <%=@company.partitaiva %>
+                    <br>
+                    <%=@company.web %>
+                    <br>
+               
+            </td>
+        </tr>
+    </tbody>
+</table>
+ <table style="text-align: left; width: 100%;" cellpadding="2" cellspacing="2">
+    <tbody>
+        <tr>
+            <td class="titoletto " width="15%">
+                data fattura
+            </td>
+			 <td class="titoletto" width="15%">
+               n. fattura
+            </td>
+            <td class="titoletto" width="15%">
+                job nr.
+            </td>
+            <td class="titoletto" width="55%">
+                oggetto
+            </td>
+        </tr>
+        <tr>
+            <td class="mini_header">
+                <%=@object.created_at.l("%d-%m-%Y") %>
+            </td>
+            <td class="mini_header">
+                <%=@object.code %>
+            </td>
+			<td class="mini_header">
+                <%=@object.project.code %>
+            </td>
+            <td class="mini_header">
+                <%=@object.title %>
+            </td>
+        </tr>
+		
+		<tr>
+            <td class="titoletto " colspan="2">
+                mod. pagamento
+            </td>
+            <td class="titoletto">
+                consegna
+            </td>
+            <td class="titoletto">
+                coordinate bancarie
+            </td>
+        </tr>
+        <tr>
+            <td class="mini_header" colspan="2">
+                <%=@object.paymentmethod.paymentmethod %>
+            </td>
+            <td class="mini_header">
+                <%=@object.delivery %>
+            </td>
+            <td class="mini_header">
+                <%=@object.bank %>
+            </td>
+        </tr>
+		
+    </tbody>
+</table>
+<span style="font-weight: bold;">
+    <br>
+<fieldset>
+    
+    <table class="header tableinfo" cellpadding="2" cellspacing="2" border="0">
+        <tbody>
+            <tr>
+                <td  colspan="2"><b>
+                    DESCRIZIONE</b>
+                </td>
+            </tr>
+            <tr>
+                <td width="85%">
+                </td>
+                <td width="15%">
+                </td>
+                
+            </tr>
+			
+			<% @object.invoiceitems.each do |e|%>
+			  		<tr>
+			  			<td>
+			  				<span>
+			  				<%="N. #{number_with_precision(e.quantity,0)}" unless !e.quantity%> 
+			  				<%=e.description %>
+							</span>
+			  			</td>
+						 						 <td></td>
+						<td align="right">
+							<b><%=number_to_currency e.price * (e.quantity ? e.quantity : 1)%></b>
+						</td>
+			  			</tr>
+			   <%end%>
+			   <% if @object.discount %>
+			 <tr>
+			  			<td>
+			  				<span>
+				  				Sconto a voi riconosciuto
+							</span>
+			  			</td>
+						 <td></td>
+						<td align="right">
+							<b><%="- #{number_to_currency @object.discount}" if @object.discount%></b>
+						</td>
+			  			</tr>
+			<%end  %>
+			   
+            <tr>
+                <td rowspan="1" colspan="3">
+                    <%=@object.notes %>
+                </td>
+                 
+            </tr>
+			
+            <tr>
+            	<td rowspan="3">
+            		<span style="font-weight: bold;"><%=@company.ragionesociale %></span>
+					
+            	</td>
+                <td    align="right" class="titoletto"> 
+                    <b>totale imponibile</b>
+                </td>
+                <td align="right">
+                    <span style="font-weight: bold;"><%= number_to_currency @object.imponibile%></span>
+                </td>
+            </tr>
+			<tr>
+                <td   align="right" class="titoletto"> 
+                    <b>IVA</b>
+                </td>
+                <td align="right">
+                    <span style="font-weight: bold;"><%= number_to_currency @object.iva %></span>
+                </td>
+            </tr>
+			<tr>
+                <td    align="right" class="titoletto"> 
+                    <b>totale FATTURA</b>
+                </td>
+                <td align="right">
+                    <span style="font-weight: bold;"><%= number_to_currency @object.total%></span>
+                </td>
+            </tr>
+			
+        </tbody>
+         
+    </table>
+</fieldset>

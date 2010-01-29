@@ -1,0 +1,7 @@
+<div id="project-form"></div>
+<%= render :partial => 'form_items', :object => :project_form_items %>
+<%= ext_form_for :project,
+                 :element => 'project-form',
+                 :form_items => :project_form_items,
+                 :mode => :show %>
+				 

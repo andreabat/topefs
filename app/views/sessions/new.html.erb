@@ -1,0 +1,81 @@
+<br>
+<center>
+	
+<div id="login-form"></div>
+<div id="flash"></div>
+<div class="logo" style="font-size:10px"><%=@app_name%><br>versione <%=@app_version%>
+  			 <br>
+			 <img src="<%=@app_logo%>"/>
+	</div>
+</center>
+
+<script type="text/javascript">
+//<![CDATA[
+		  var LIST_URL="/session";
+		  var render_to = "login-form";
+		  var panel;
+          Ext.onReady(function(){
+
+              Ext.QuickTips.init();
+
+              // turn on validation errors beside the field globally
+              Ext.form.Field.prototype.msgTarget = 'side';
+
+              panel = new Ext.FormPanel({
+                  labelWidth:   75, // label settings here cascade unless overridden
+                  url:          LIST_URL,
+                  frame:         true,
+                  waitMsgTarget: true,
+				  monitorValid:true,
+                  title:         'Login',
+                  bodyStyle:     'padding:5px 5px 0',
+                  width:         350,
+                  defaults:      {width: 230},
+                  defaultType:   'textfield',
+                  renderTo:      render_to,
+                  baseParams:    {authenticity_token: '<%= "#{form_authenticity_token}" %>'},
+                  items: [ 
+				  			{  fieldLabel: 'Username',minLength:3,  allowBlank: false,  xtype: 'textfield',  name: 'login',id:'frm-login'},
+						    {  inputType:'password',fieldLabel: 'Password',minLength:4,  allowBlank: false,  xtype: 'textfield',  name: 'password'}
+						],
+				  listeners:{
+				  				 
+								'clientvalidation':{
+										fn:function(f,ok){
+											var o  =Ext.getCmp("save_btn");
+											ok?o.enable():o.disable();
+										}
+									}  
+						},
+                  buttons: [ { 
+				  				id:'save_btn', 
+								text: 'Login', 
+								iconCls:'icon_lock',
+								type: 'submit',  
+								handler: function(){ 
+														panel.form.submit({
+																			success:function(a,b,c){
+																						window.location="/home/"
+				  																	},
+																			failure:function(a,b,c){
+																				Ext.Msg.show({
+																							animEl:'save_btn',
+																							title: "Errore",
+																							msg: "Non autenticato",
+																							icon: Ext.MessageBox.ERROR
+																						});
+																			},
+																			url:LIST_URL + '?format=ext_json', 
+																			waitMsg:'Accesso...'
+																		}); 
+														}
+							 } 
+                           ]
+              });
+			  
+			Ext.getCmp("frm-login").focus();
+                  
+          });
+
+//]]>
+</script>

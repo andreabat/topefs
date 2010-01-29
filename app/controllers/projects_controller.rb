@@ -100,7 +100,7 @@ class ProjectsController < ApplicationController
   def duplicate
     find_project
     @new_project = @project.clone
-    @new_project.title = "Copy of " + @project.title
+    @new_project.title = "Copia di " + @project.title
     @new_project.start = Time.now
     @new_project.end = nil
 

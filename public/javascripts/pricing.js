@@ -8,7 +8,6 @@
 		if (!verifyIfAllowed(pricingitems,"priced",true)) return;
 	//	if (!win_pricing) 
 	{
-		 
 		win_pricing = new Ext.Window({
 						                    //el:'pricing-win',
 											title:"Creazione preventivo",
@@ -154,7 +153,7 @@
 			
 
 			p.doLayout();
-			if (Ext.getCmp("pricing[discount]").value==""){
+			if (Ext.getCmp("pricing[discount]").getValue()==""){
 				Ext.getCmp("pricing[discount]").setValue(0);
 			}
 			Ext.getCmp("pricing[discount]").setValue(Ext.getCmp("pricing[discount]").getValue().replace(",","."));

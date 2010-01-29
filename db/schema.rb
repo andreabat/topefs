@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 0) do
+ActiveRecord::Schema.define(:version => 20100129140610) do
 
   create_table "categories", :force => true do |t|
     t.string "name", :limit => 200, :null => false
@@ -52,8 +52,6 @@ ActiveRecord::Schema.define(:version => 0) do
     t.text     "coordinatebancarie"
   end
 
-  add_index "customers", ["partitaiva"], :name => "sqlite_autoindex_customers_1", :unique => true
-
   create_table "documents", :force => true do |t|
     t.integer  "project_id",                :null => false
     t.string   "doc",        :limit => 400
@@ -64,18 +62,18 @@ ActiveRecord::Schema.define(:version => 0) do
   end
 
   create_table "invoiceitems", :force => true do |t|
-    t.integer  "invoice_id",                                                  :null => false
-    t.integer  "quantity",       :limit => 10, :precision => 10, :scale => 0
+    t.integer  "invoice_id",                                    :null => false
+    t.decimal  "quantity",       :precision => 10, :scale => 2
     t.float    "price"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "description"
     t.integer  "category_id"
-    t.integer  "projectitem_id",                                              :null => false
+    t.integer  "projectitem_id",                                :null => false
   end
 
   create_table "invoices", :force => true do |t|
-    t.integer  "project_id",                      :null => false
+    t.integer  "project_id",                                         :null => false
     t.integer  "user_id"
     t.datetime "created_at"
     t.integer  "budget_id"
@@ -93,19 +91,20 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer  "vat"
     t.integer  "document_id"
     t.integer  "pricing_id"
-    t.integer  "payed"
+    t.boolean  "payed",                           :default => false, :null => false
     t.date     "payed_date"
-    t.boolean  "deleted",                         :null => false
+    t.boolean  "deleted",                         :default => false, :null => false
+    t.integer  "projectitem_id",                  :default => 0,     :null => false
   end
 
   create_table "orderitems", :force => true do |t|
-    t.integer  "order_id",                                                    :null => false
-    t.integer  "quantity",       :limit => 10, :precision => 10, :scale => 0
+    t.integer  "order_id",                                      :null => false
+    t.decimal  "quantity",       :precision => 10, :scale => 2
     t.float    "cost"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "description"
-    t.integer  "projectitem_id",                                              :null => false
+    t.integer  "projectitem_id",                                :null => false
   end
 
   create_table "orders", :force => true do |t|
@@ -128,6 +127,8 @@ ActiveRecord::Schema.define(:version => 0) do
     t.integer  "payed_invoice",                     :default => 0
     t.date     "payed_invoice_date"
     t.boolean  "deleted",                                          :null => false
+    t.integer  "year"
+    t.string   "code",               :limit => 20
   end
 
   create_table "paymentmethods", :force => true do |t|
@@ -135,17 +136,19 @@ ActiveRecord::Schema.define(:version => 0) do
   end
 
   create_table "pricingitems", :force => true do |t|
-    t.integer  "pricing_id",                                               :null => false
-    t.integer  "quantity",    :limit => 10, :precision => 10, :scale => 0
+    t.integer  "pricing_id",                                                   :null => false
+    t.decimal  "quantity",       :precision => 10, :scale => 2
     t.float    "price"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.text     "description"
     t.integer  "category_id"
+    t.integer  "projectitem_id",                                :default => 0
+    t.integer  "display_order"
   end
 
   create_table "pricings", :force => true do |t|
-    t.integer  "project_id",                      :null => false
+    t.integer  "project_id",                                                                      :null => false
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -159,6 +162,10 @@ ActiveRecord::Schema.define(:version => 0) do
     t.text     "people"
     t.text     "notes"
     t.integer  "document_id"
+    t.integer  "approved",                                                       :default => 0
+    t.datetime "approval_date"
+    t.integer  "code_abs"
+    t.decimal  "discount",                        :precision => 10, :scale => 4, :default => 0.0
   end
 
   create_table "proceeds", :force => true do |t|
@@ -173,13 +180,14 @@ ActiveRecord::Schema.define(:version => 0) do
 
   create_table "projectitems", :force => true do |t|
     t.integer  "project_id"
-    t.integer  "quantity",    :limit => 10, :precision => 10, :scale => 0
-    t.float    "cost"
-    t.float    "price"
+    t.decimal  "quantity",      :precision => 10, :scale => 2
+    t.decimal  "cost",          :precision => 10, :scale => 4
+    t.decimal  "price",         :precision => 10, :scale => 4
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "category_id"
     t.text     "description"
+    t.integer  "display_order"
   end
 
   create_table "projects", :force => true do |t|
@@ -234,8 +242,6 @@ ActiveRecord::Schema.define(:version => 0) do
     t.datetime "updated_at"
     t.integer  "paymentmethod_id"
   end
-
-  add_index "suppliers", ["partitaiva"], :name => "sqlite_autoindex_suppliers_1", :unique => true
 
   create_table "timesheet", :force => true do |t|
     t.datetime "date",       :null => false

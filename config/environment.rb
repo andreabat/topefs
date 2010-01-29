@@ -61,7 +61,7 @@ Rails::Initializer.run do |config|
   # config.active_record.default_timezone = :utc
   
   config.after_initialize do
-     #require "ruport"
+      require "ruport"
   end 
   
 end

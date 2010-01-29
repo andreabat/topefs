@@ -443,7 +443,7 @@
 									create_pricing(sm.getSelections(),{
 																					budget_id:'<%=@project.id%>',
 																					project_id:'<%=@project.id%>',
-																					title :'(<%=escape_javascript(@project.title)%>)',
+																					title :'<%=escape_javascript(@project.title)%>',
 																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
 																					token:"<%=form_authenticity_token%>"
 																					});

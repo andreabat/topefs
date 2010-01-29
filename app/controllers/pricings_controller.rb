@@ -13,7 +13,6 @@ class PricingsController < ApplicationController
 before_filter :login_required
   require_role ["admin","account"]
   
-   
     def index
       @project = Project.find(params[:project_id])
     respond_to do |format|
@@ -59,12 +58,19 @@ before_filter :login_required
   def documatic
     
     path = File.join(RAILS_ROOT, 'doc','preventivo.odt');
-    name = "preventivo_#{@object.code.gsub('/','_').rjust(8,'0')}.odt"
-    outpath = File.join(RAILS_ROOT, 'public',  'document',name)
-    table = @object.pricingitems.report_table(:all,:order=>"id asc",:methods=>["category_name","price_label","qty_label","totale"])
+    name = "preventivo_#{@object.code.gsub("/","_").rjust(8,"0")}.odt"
+    #"
+    outpath = File.join(RAILS_ROOT, "public",  "document",name)
+    
+    table = @object.pricingitems.report_table(:all,:methods=>["category_name","price_label","qty_label","totale"])
+    #table = @object.pricingitems.report_table(:all,:methods=>["category_name","price_label","qty_label","totale"])
+    #table = @object.pricingitems.report_table(:all,:order=>"created_at",:methods=>["category_name","price_label","qty_label","totale"])
+    table.sort_rows_by!("display_order", :order => :ascending)
     data = Grouping.new(table,:by=>"category_name")
+    #data.sort_grouping_by!(:category_name)
     print table.as(:text)
     totale = @object.total
+    
     totale = @object.total - @object.discount if @object.discount>0
     
     data.to_odt_template(   :template_file => path,
@@ -88,99 +94,7 @@ before_filter :login_required
      send_file(outpath,:filename=>name,:type=> "application/vnd.oasis.opendocument.text", :disposition => 'inline')
   end
   
-  def excel
-    
-    path = File.join(RAILS_ROOT, 'doc','preventivo.xls');
-
-     book = Spreadsheet.open path
-     sheet1 = book.worksheet 0
-     sheet1.row(1)[5]=@company.ragionesociale
-     sheet1.row(2)[7]=@company.indirizzo
-     sheet1.row(3)[7]="#{@company.cap} #{@company.comune} - Italia"
-     sheet1.row(4)[7]="T. #{@company.telefono}"
-     sheet1.row(5)[7]="F. #{@company.fax}"
-     sheet1.row(6)[7]="P.IVA #{@company.partitaiva}"
-     sheet1.row(7)[7]=@company.web
-     
-     
-     
-     sheet1.row(9)[2]=@object.created_at.l('%d/%m/%Y')
-     sheet1.row(10)[2]="n.#{@object.code.rjust(8,"0")}"
-     sheet1.row(10)[4]=@object.project.customer.ragionesociale
-     sheet1.row(11)[2]="n.#{@object.project.code.rjust(8,"0")}"
-     sheet1.row(13)[2]=@object.user.nominativo
-     sheet1.row(13)[5]=@object.people
-     sheet1.row(15)[2]=@object.title
-     start_row = 20
-     current_cat = 0
-     word_limit = 63
-     
-     @object.pricingitems.find(:all,:order=>"category_id desc").each do |e| 
-       
-       if e.category!=nil && (current_cat!=e.category_id)  
-          start_row+=1
-          sheet1.row(start_row)[1]=e.category.name.upcase   
-          start_row+=1
-          current_cat=e.category_id
-       end
-       desc = "- #{e.description}"
-
-       end_index = 0
-       while (end_index!=nil) do
-         if (desc.length<=word_limit) then
-            end_index = nil
-          else
-             end_index = desc.rindex("\s",word_limit)
-           end
-         
-         if (end_index==nil) then
-            piece =desc[0..desc.length-1] 
-         else 
-           piece=desc[0..end_index]
-           desc =desc[end_index+1..desc.length-1] 
-         end
-          sheet1.row(start_row)[1]=piece
-          start_row+=1 unless !end_index
-       end
-       
-#       sheet1.row(start_row)[1]= "- #{e.description}"
-       sheet1.row(start_row)[5]= e.quantity  unless !e.quantity
-       sheet1.row(start_row)[6]= number_to_currency e.price  unless !e.price
-       logger.info("Il valore di price " + e.price.to_s)
-       sheet1.row(start_row)[7]= number_to_currency(e.price * (e.quantity ? e.quantity : 1))
-       start_row+=1
-     end
-     if @object.discount>0
-       sheet1.row(start_row)[1]="Sconto"
-       sheet1.row(start_row)[7]= number_to_currency -@object.discount
-     end
-     #range valido 21 -41 se vado oltre 40 devo aggiungere righe con uno stratagemma.
-     
-     
-#     mr = sheet1.row(1000)
-#
-#     sheet1.rows.insert(6,mr)
-#     sheet1.updated_from(6)
-#     sheet1.row(6)[1]= "@object.total"
-     #Parte per l'inserimento del totale
-     totale = @object.total
-     totale = @object.total - @object.discount if @object.discount>0
-     sheet1.row(42)[7]= number_to_currency totale
-     sheet1.row(45)[2]= @object.delivery
-     sheet1.row(46)[2]= @object.paymentmethod.paymentmethod unless !@object.paymentmethod
-     sheet1.row(47)[2]= @object.invoicing unless !@object.invoicing
-     sheet1.row(54)[6]= @company.ragionesociale
-     name = "preventivo_#{@object.code.gsub('/','_').rjust(8,'0')}.xls"
-     path =File.join(RAILS_ROOT, 'public',  'document',name);
-     book.write path
-     
-     @object.document=Document.new(:project_id=> @object.project_id, :doctype=>"preventivo",:user_id=>current_user.id)
-    
-     @object.document.doc=File.open(path)
-     @object.save
-     
-     send_file(path,:filename=>name,:type=> "application/excel", :disposition => 'inline')
-  end
+#  
   
   def showbyprojectitem
     @object = Pricingitem.find(:first,:conditions=>{:projectitem_id=>params[:id]})
@@ -193,7 +107,7 @@ before_filter :login_required
     @object = Pricing.find(params[:id])
     @company =  @object.project.company 
     out = render_to_string :inline=>params[:html], :layout =>"output"
-    logger.debug out
+    #logger.debug out
     #create file
     path = File.join(RAILS_ROOT, 'public',  'document','preventivo');
     FileUtils.mkdir path unless File.exists?(path)
@@ -217,14 +131,14 @@ before_filter :login_required
     #template serve per la visualizzazione
     #creo prima il record prev
      @object = Pricing.new(params[:pricing])
-     logger.debug "preventivo  e' #{@object.title}"
+     #logger.debug "preventivo  e' #{@object.title}"
      @object.user_id = current_user.id
-     
      
      
      
      if @object.save
        #è necessario copiare da budgeitems in previtems
+       index=0   
        params[:projectitem].each{|key,value|   
                     bi = Projectitem.find(value)
                     oi = Pricingitem.new( 
@@ -232,13 +146,15 @@ before_filter :login_required
                         :price=>bi.price,
                         :description=>bi.description,
                         :projectitem_id=>bi.id,
-                        :category_id=>bi.category_id
+                        :category_id=>bi.category_id,
+                        :display_order=>index
                      )
                       @object.pricingitems<<oi
+                      index=index+1
        }
        @company =  @object.project.company
        # se qui invece creassi il documento ?
-  
+    
        #out = render_to_string :action =>template
        #logger.debug "ho genereato #{{:success => true,:id=>@object.id,:html=>out}.to_json}"
        render :json => {:success => true,:id=>@object.id}.to_json
@@ -297,3 +213,98 @@ end
   end
   
 end
+
+
+#def excel
+#    
+#    path = File.join(RAILS_ROOT, 'doc','preventivo.xls');
+#
+#     book = Spreadsheet.open path
+#     sheet1 = book.worksheet 0
+#     sheet1.row(1)[5]=@company.ragionesociale
+#     sheet1.row(2)[7]=@company.indirizzo
+#     sheet1.row(3)[7]="#{@company.cap} #{@company.comune} - Italia"
+#     sheet1.row(4)[7]="T. #{@company.telefono}"
+#     sheet1.row(5)[7]="F. #{@company.fax}"
+#     sheet1.row(6)[7]="P.IVA #{@company.partitaiva}"
+#     sheet1.row(7)[7]=@company.web
+#     
+#     
+#     
+#     sheet1.row(9)[2]=@object.created_at.l('%d/%m/%Y')
+#     sheet1.row(10)[2]="n.#{@object.code.rjust(8,"0")}"
+#     sheet1.row(10)[4]=@object.project.customer.ragionesociale
+#     sheet1.row(11)[2]="n.#{@object.project.code.rjust(8,"0")}"
+#     sheet1.row(13)[2]=@object.user.nominativo
+#     sheet1.row(13)[5]=@object.people
+#     sheet1.row(15)[2]=@object.title
+#     start_row = 20
+#     current_cat = 0
+#     word_limit = 63
+#     
+#     @object.pricingitems.find(:all,:order=>"category_id desc").each do |e| 
+#       
+#       if e.category!=nil && (current_cat!=e.category_id)  
+#          start_row+=1
+#          sheet1.row(start_row)[1]=e.category.name.upcase   
+#          start_row+=1
+#          current_cat=e.category_id
+#       end
+#       desc = "- #{e.description}"
+#
+#       end_index = 0
+#       while (end_index!=nil) do
+#         if (desc.length<=word_limit) then
+#            end_index = nil
+#          else
+#             end_index = desc.rindex("\s",word_limit)
+#           end
+#         
+#         if (end_index==nil) then
+#            piece =desc[0..desc.length-1] 
+#         else 
+#           piece=desc[0..end_index]
+#           desc =desc[end_index+1..desc.length-1] 
+#         end
+#          sheet1.row(start_row)[1]=piece
+#          start_row+=1 unless !end_index
+#       end
+#       
+##       sheet1.row(start_row)[1]= "- #{e.description}"
+#       sheet1.row(start_row)[5]= e.quantity  unless !e.quantity
+#       sheet1.row(start_row)[6]= number_to_currency e.price  unless !e.price
+#       logger.info("Il valore di price " + e.price.to_s)
+#       sheet1.row(start_row)[7]= number_to_currency(e.price * (e.quantity ? e.quantity : 1))
+#       start_row+=1
+#     end
+#     if @object.discount>0
+#       sheet1.row(start_row)[1]="Sconto"
+#       sheet1.row(start_row)[7]= number_to_currency -@object.discount
+#     end
+#     #range valido 21 -41 se vado oltre 40 devo aggiungere righe con uno stratagemma.
+#     
+#     
+##     mr = sheet1.row(1000)
+##
+##     sheet1.rows.insert(6,mr)
+##     sheet1.updated_from(6)
+##     sheet1.row(6)[1]= "@object.total"
+#     #Parte per l'inserimento del totale
+#     totale = @object.total
+#     totale = @object.total - @object.discount if @object.discount>0
+#     sheet1.row(42)[7]= number_to_currency totale
+#     sheet1.row(45)[2]= @object.delivery
+#     sheet1.row(46)[2]= @object.paymentmethod.paymentmethod unless !@object.paymentmethod
+#     sheet1.row(47)[2]= @object.invoicing unless !@object.invoicing
+#     sheet1.row(54)[6]= @company.ragionesociale
+#     name = "preventivo_#{@object.code.gsub('/','_').rjust(8,'0')}.xls"
+#     path =File.join(RAILS_ROOT, 'public',  'document',name);
+#     book.write path
+#     
+#     @object.document=Document.new(:project_id=> @object.project_id, :doctype=>"preventivo",:user_id=>current_user.id)
+#    
+#     @object.document.doc=File.open(path)
+#     @object.save
+#     
+#     send_file(path,:filename=>name,:type=> "application/excel", :disposition => 'inline')
+#  end

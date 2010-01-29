@@ -20,8 +20,9 @@ def price_label
   s
 end
 def qty_label
-  a = sprintf("%.#{2}f", quantity) unless a==nil
+  a = sprintf("%.#{2}f", quantity) #unless a==nil
   a.gsub(".00","").gsub(".",",") unless a==nil
+  a
 end
 
 end

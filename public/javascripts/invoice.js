@@ -198,11 +198,11 @@ return;
 																			    name:"invoice[vat]",
 																				value:"20"
 																			  },
-																			  {
+																			  /*{
 																			    xtype:"numberfield",
 																			    fieldLabel:"Sconto",
 																			    name:"invoice[discount]"
-																			  },
+																			  },*/
 																			  {
 																			    xtype:"textarea",
 																			    fieldLabel:"Referenti",

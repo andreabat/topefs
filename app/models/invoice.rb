@@ -15,6 +15,10 @@ class Invoice < Coded
     Date.parse(self.created_at.strftime('%Y/%m/%d'))+60
   end
   
+  def customer
+  	self.project.customer.ragionesociale
+  end
+  
   def expired
     return true if  (expires<=Date.today)
      return false if  (expires>Date.today)

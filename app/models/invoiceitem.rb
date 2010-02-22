@@ -5,13 +5,19 @@ class Invoiceitem< ActiveRecord::Base
   has_one    :projectitem
   acts_as_reportable
   
+  def category_name
+    category.name.upcase
+  end
+
+  
   def totale
     number_to_currency(price * (quantity ? quantity : 1))
   end
   
   def line_description
+    qty = number_with_delimiter(quantity.to_i,".","") unless !quantity
     desc = ""
-    desc = "N. #{number_with_precision(quantity,0)}  " unless !quantity
+    desc = "N. #{qty}  " unless !quantity
     desc += description
   end
 end

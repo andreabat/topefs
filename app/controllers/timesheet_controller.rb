@@ -8,21 +8,27 @@ class TimesheetController < ApplicationController
       format.html   {
       
       @project=Project.find(params[:project_id]) unless !params[:project_id]
-      render :layout =>"standard" 
+      @users = User.all(:order=>:nominativo).map{|u| [u.id,u.nominativo]}
+      	render :layout =>"standard" 
       } 
+      if params[:uid].nil?
+	      @uid = current_user.id
+      else
+	      @uid = params[:uid]
+      end
       
       format.ext_json { 
         d =  DateTime.parse(params[:d])
-        t = Timesheet.find_all_by_user_id(current_user.id,:conditions=>['date=?',d])
+        t = Timesheet.find_all_by_user_id(@uid,:conditions=>['date=?',d])
         #  ext_json{:prova=>"Ciao",:data=>d.strftime("%d %m %Y")}
         render :json=>t.to_ext_json(:class=>:timesheet,:include=>{:project=>{:only=>"title"}})
       }
     end
     end
     def create
-      
+	 
       @object = Timesheet.new(params[:timesheet]) 
-      @object.user_id=current_user.id
+      @object.current_user.id=@uid if @object.user_id.nil?
       if @object.save
         render :json => {:success => true,:id=>@object.id}.to_json
       else

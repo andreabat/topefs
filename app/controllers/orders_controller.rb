@@ -29,7 +29,7 @@ class OrdersController < ApplicationController
   
     def expired
       find_expired
-      render :json => @orders.to_ext_json(:class=>:order,:count => @count,:include=>{:project=>{:only=>"title"},:supplier=>{:only=>["ragionesociale","id"]}}) 
+      render :json => @orders.to_ext_json(:class=>:order,:count => @count,:methods=>[:code,:total_ivato],:include=>{:project=>{:only=>"title"},:supplier=>{:only=>["ragionesociale","id"]}}) 
   end
   
   def show
@@ -65,7 +65,6 @@ class OrdersController < ApplicationController
     @object = Order.find(params[:id])
     @company =  @object.project.company 
     out = render_to_string :inline=>params[:html], :layout =>"output"
-    logger.debug out
     #create file
     path = File.join(RAILS_ROOT, 'public',  'document','ordine');
     FileUtils.mkdir path unless File.exists?(path)
@@ -103,8 +102,12 @@ class OrdersController < ApplicationController
                         :description=>bi.description,
                         :projectitem_id=>bi.id 
                      )
-                      @object.orderitems<<oi
+                      @object.orderitems << oi 
+                      
+                      
+                      
        }
+       
        @company =  @object.project.company
 #       out = render_to_string :action =>template
 #       logger.debug "ho genereato #{{:success => true,:id=>@object.id,:html=>out}.to_json}"
@@ -152,9 +155,16 @@ def odt
     path = File.join(RAILS_ROOT, 'doc','ordine.odt');
     name = "ordine_#{@object.code.gsub('/','_').rjust(8,'0')}.odt"
     outpath = File.join(RAILS_ROOT, 'public',  'document',name)
-    data = @object.orderitems.report_table(:all,:methods=>["line_description","totale"])
+    data = @object.orderitems.report_table(:all,:methods=>["line_description","totale","category_name"])
     totale = @object.total
     @object.vat
+    
+    
+#    data.sort_rows_by!("categoty_name")
+    data.sort_rows_by!(["category_name","projectitem_id"])
+    
+    
+    #puts @company.cap_comune_nazione
     data.to_odt_template(   :template_file => path,
       :title=>"ORDINE DI LAVORO #{@object.created_at.year}",
       :company=>@company,

@@ -56,7 +56,8 @@ Ext.form.TextField.prototype.initValue = function()
 
 
 Ext.util.Format.euroMoney = function(v){
-      
+      	if (isNaN(v)||!v)
+      		v=0;
 			var f =parseFloat(v);
 			if(f.toFixed)
 				v=f.toFixed(4);

@@ -10,6 +10,7 @@ class Project < Coded
     has_many :pricings
     has_many :projectitems, :dependent => :destroy
     has_many :proceeds
+    acts_as_reportable
     
     def invoiced_orders_total
        t=0

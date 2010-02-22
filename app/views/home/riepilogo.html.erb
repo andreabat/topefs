@@ -216,6 +216,10 @@ function build_list_commesse(){
                   ['id','code','project_id','title','document_id',{
 					name:'project_title',
 					mapping:'project.title'
+					}
+					,{
+					name:'customer_ragionesociale',
+					mapping:'project.customer.ragionesociale'
 					},
 					{
 					name:'expires',
@@ -235,6 +239,7 @@ function build_list_commesse(){
 						,'<a href="#" onclick="invoice_view_proceeds({id},\'{code}\')">visualizza pagamenti</a>'
 						,' | <a href="#" onclick="invoice_doc(\'{document_id}\',\'{code}\')">visualizza file</a><br><br>'
 						,'<b>Fattura</b>:{code} - {title}<br>'
+						,'<b>Cliente</b>:{customer_ragionesociale}<br>'
 						,'<b>Data Scadenza</b>:<span class="finance_alert">{expires}</span><br>'
 						,'<b>Progetto</b>:<a href="#" onclick="invoice_view_project({project_id},\'{project_title}\')">{project_title}</a><br>'
 						,'</fieldset>'
@@ -281,14 +286,18 @@ function build_list_commesse(){
                 },
                 root: 'orders',
                 id: 'id',
-                fields: ['id',
+                fields: ['id','code',
 					{
 						name:'amount_invoice',
 						type:'float'  
 					},
-					'payed_invoice','project_id','title','document_id',{
+					'payed_invoice','project_id','title','document_id','amount_invoice','total_ivato',{
 					name:'project_title',
 					mapping:'project.title'
+					},
+					{
+					name:'supplier',
+					mapping:'supplier.ragionesociale'
 					},
 					{
 					name:'expires_invoice',
@@ -306,9 +315,10 @@ function build_list_commesse(){
 						,'<a href="#" onclick="order_doc(\'{document_id}\',\'{id}\')">visualizza file</a>'
 						,' | <a href="#" onclick="order_pay(\'{id}\',this)">paga fattura</a><br><br>'
 						,'<b>Nr. Ordine</b>:{code} - {title}<br>'
-						,'<b>Importo</b>:{[fm.euroMoney(values.amount_invoice)]}<br>'
+						,'<b>Importo</b>:{[fm.euroMoney(values.total_ivato)]} ivato<br>'
 						,'<b>Data Scadenza</b>:<span class="finance_alert">{expires_invoice}</span><br>'
 						,'<b>Progetto</b>:<a href="#" onclick="invoice_view_project({project_id},\'{project_title}\')">{project_title}</a><br>'
+						,'<b>Fornitore</b>:{supplier}'
 						,'</fieldset>'
 						,'</div>', '</tpl>');
 						
@@ -379,7 +389,6 @@ function build_list_commesse(){
 		}
 
 		function order_doc(document_id,code){
-			alert (document_id);
 		if (!document_id||document_id=="null"){return; }
 		//visualizzo in riepilogo ?
 		build_local_tab("/documents/"+document_id,"Ordine " + code)

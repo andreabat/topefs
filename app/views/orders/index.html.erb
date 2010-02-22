@@ -16,6 +16,7 @@
                           [ {name: 'id', mapping: 'id'},
 						  	{name:"order[login]",mapping:'user.login'},
 							{name: 'order[project_id]', mapping: 'project_id'},
+							{name: 'order[title]', mapping: 'title'},
 							{name: 'order[code]', mapping: 'code'},
 							{name: 'order[received_invoice]', mapping: 'received_invoice'},
 //							{name: 'order[budget_id]', mapping: 'budget_id'},
@@ -52,6 +53,7 @@
     {id: 'sh', header: "Visualizza",  width: 20, renderer:function(a,b,r){return "<a target='_blank' href='/documents/show/" + r.get("order[document_id]") + "'>visualizza</a>"}
 	},
 	{id: 'bg',header: "Progetto", width: 20, renderer:budget_renderer},
+	{id: 'og',header: "Oggetto", width: 40, dataIndex:'order[title]'},
 	{id: 'ri',header: "Ricevuta Fattura", width: 20,dataIndex:'order[received_invoice]', renderer:function(a){ return a==1?'S':'N'}},
 	{id: 'pi',header: "Pagata Fattura", width: 20,dataIndex:'order[payed_invoice]', renderer:function(a){ return a==1?'S':'N'}},
     {id: 'id', header: "Ordine", width: 20, dataIndex: 'order[code]'},

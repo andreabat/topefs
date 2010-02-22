@@ -21,6 +21,7 @@ function add_tab(x,y){
 						     {name:"pricing[code]",mapping:'code'},
 							 {name:"pricing[approved]",mapping:'approved'},
 						  	{name:"pricing[login]",mapping:'user.login'},
+						  	{name:"pricing[title]",mapping:'title'},
 							{name:"pricing[project]",mapping:'project.title'},
 							{name: 'pricing[project_id]', mapping: 'project_id'},
 							{name: 'pricing[user_id]', mapping: 'user_id'},
@@ -68,6 +69,7 @@ Ext.Ajax.request({
   var pricing_column_model = new Ext.grid.ColumnModel([
     {id: 'sh', header: "Visualizza", width: 20, renderer:function(a,b,r){return "<a target='_blank' href='/documents/show/" + r.get("pricing[document_id]") + "'>visualizza</a>"}
 	},
+	{id: 'op', header: "Oggetto", width: 50,dataIndex: 'pricing[title]'},
  	{id: 'ap', header: "Approvato", width: 50,dataIndex: 'pricing[approved]',renderer:approved},
 	{id: 'bg', header: "Progetto", width: 20,dataIndex: 'pricing[project]'},
     {id: 'id', header: "Preventivo", width: 20, dataIndex: 'pricing[code]'},

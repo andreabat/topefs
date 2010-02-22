@@ -1,5 +1,12 @@
+require "ruport"
+require 'documatic'
+
+
 class ProjectsController < ApplicationController
    include AuthenticatedSystem
+    include FileColumn 
+  include ActionView::Helpers::NumberHelper
+  include Ruport::Data
   layout "standard"
   before_filter :find_project, :only => [ :show, :edit, :update, :destroy,:finance_summary,:customer_list,:edititems,:list_item_data ]
   before_filter :find_active_projects, :only => [ :active]
@@ -22,6 +29,7 @@ class ProjectsController < ApplicationController
       format.html     # index.html.erb (no data required)
       format.ext_json { render :json => find_projects.to_ext_json(:class => :project, :count => @count,:include=>{
                                                                             :customer=>{:only=>"ragionesociale"}}) }
+      format.odt {odt}
     end
   end
 
@@ -45,8 +53,8 @@ class ProjectsController < ApplicationController
     @costi_personale = 0
      ts.each{|x| @costi_personale+=x.cost}
      
-     @graph_costi = open_flash_chart_object(250,250, '/reports/costi_commessa/'<<params[:id], true, '/')
-     @graph_finanze = open_flash_chart_object(500,250, '/reports/report1?id='<<params[:id], true, '/')     
+     @graph_costi = open_flash_chart_object(250,250, '/reports/costi_commessa/'<< params[:id], true, '/')
+     @graph_finanze = open_flash_chart_object(500,250, '/reports/report1?id='<< params[:id], true, '/')     
  #   @costi_personale = ts.sum(:cost) unless ts==nil #else      @costi_personale = 0  
     render :layout=>false
   end
@@ -59,6 +67,7 @@ class ProjectsController < ApplicationController
       f = find_active_projects
 
       format.ext_json { render  :json => f.to_ext_json(:class => :project, :count => f.length) }
+      
       #render :template =>"projects/index"
 
     end
@@ -181,6 +190,23 @@ def project_item_data
     end
   end  
   
+  def odt
+    path = File.join(RAILS_ROOT, 'doc','timesheet.ods');
+    name = "timesheet.odt"
+    outpath = File.join(RAILS_ROOT, "public",  "timesheet",name)
+    
+    find_active_projects
+    table = Project.report_table(:all,:include=>{:customer=>{:only=>"ragionesociale"}},:conditions => "end is null or end >= now()")
+    
+    
+    table.to_ods_template(   :template_file => path,
+      :output_file   =>outpath)
+#     @object.document=Document.new(:project_id=> @object.id, :doctype=>"timesheet",:user_id=>current_user.id)
+#     File.open(outpath)
+   #  @object.save
+     send_file(outpath,:filename=>name,:type=> "application/vnd.oasis.opendocument.text", :disposition => 'inline')
+  end
+  
   protected
   
     def find_project
@@ -205,7 +231,7 @@ def project_item_data
       all_opts = options_from_pagination_state(pagination_state).merge(options_from_search(:project))
       #.merge({:conditions => "status_id=1"})
       #print (all_opts)
-      all_opts[:conditions] << " and status_id=1"
+      all_opts[:conditions] << " and status_id=1" unless  all_opts[:conditions].nil?
       @count = Project.count(:all,options_from_search(:project))
       @projects = Project.find(:all,all_opts)
     end

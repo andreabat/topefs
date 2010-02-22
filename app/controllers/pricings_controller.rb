@@ -63,12 +63,17 @@ before_filter :login_required
     outpath = File.join(RAILS_ROOT, "public",  "document",name)
     
     table = @object.pricingitems.report_table(:all,:methods=>["category_name","price_label","qty_label","totale"])
+#    sorted_table = table.sort_rows_by(["category_name","display_order"], :order => :ascending)
+
     #table = @object.pricingitems.report_table(:all,:methods=>["category_name","price_label","qty_label","totale"])
     #table = @object.pricingitems.report_table(:all,:order=>"created_at",:methods=>["category_name","price_label","qty_label","totale"])
-    table.sort_rows_by!("display_order", :order => :ascending)
-    data = Grouping.new(table,:by=>"category_name")
+    #table.sort_rows_by!("display_order", :order => :ascending)
+    table.sort_rows_by!(["category_name","projectitem_id"])
+    data = Grouping.new(table,:by=>"category_name",:order => lambda { |x| x.to_s })
+    
+    #data = Group.new(:data=>sorted_table,:name=>"category_name")
     #data.sort_grouping_by!(:category_name)
-    print table.as(:text)
+    
     totale = @object.total
     
     totale = @object.total - @object.discount if @object.discount>0
@@ -149,7 +154,7 @@ before_filter :login_required
                         :category_id=>bi.category_id,
                         :display_order=>index
                      )
-                      @object.pricingitems<<oi
+                      @object.pricingitems << oi
                       index=index+1
        }
        @company =  @object.project.company

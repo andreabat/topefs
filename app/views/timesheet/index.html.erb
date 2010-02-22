@@ -5,6 +5,8 @@
 		 	project_id:"<%=@project.id rescue nil%>",
 			project_title:"<%=@project.title rescue nil%>",
 			token:"<%=form_authenticity_token%>",
+			users:<%=@users.to_json%>,
+			user_id:<%=@uid%>,
 			projects:<%=Project.find_all_by_status_id(Status.find_by_status("Aperto")).collect {|c| [c.title,c.id]}.to_json%>});
 	})
 	

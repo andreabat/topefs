@@ -1,11 +1,14 @@
 var timesheet_store;
 var projects_store;
 var project_current_id;
+var user_current_id;
 var project_token;
 var timesheet_form_url = "/timesheet/create";
 function timesheet_setup(options){
     projects_store = options.projects;
+    users_store = options.users;
     project_current_id = options.project_id;
+    user_current_id= options.user_id;
     project_token = options.token;
     timesheet_store = new Ext.data.JsonStore({
         url: '/timesheet/',
@@ -27,6 +30,7 @@ function timesheet_setup(options){
     var tpl = new Ext.XTemplate('<tpl for=".">', '<div id="hours_{id}">', '<fieldset><a href="#" onclick="timesheet_modifica({id})">modifica</a>|<a onclick="timesheet_elimina({id})" href="#">elimina</a>', '<br><b>Progetto</b>:{title}<br><b>Ore lavorate</b>:{hours}<br>', '<b>Note</b>:{notes}<br></fieldset>', '</div><hr>', '</tpl>');
     
     var dp = new Ext.DatePicker({
+        id:"dp1",
         applyTo: 'date-picker',
 		width:175
 		
@@ -50,11 +54,19 @@ function timesheet_setup(options){
             emptyText: 'Nessuna attività per il giorno'
         })
     });
-    
 }
 
-function date_selected(c, d){
+function date_selected(c, d,mystuff,myp){
     //Allora ?
+    if(mystuff&&!isNaN(mystuff)){
+	    user_current_id=mystuff
+    }
+
+    if(myp&&!isNaN(myp)){
+	    project_current_id=myp
+    }
+
+    
     var ts = Ext.getCmp("timesheet-form");
     Ext.getCmp('date-timesheet-detail').setTitle("Ore lavorate per il giorno " + d.format('d/m/Y'))
     if (!ts) {
@@ -122,6 +134,30 @@ function date_selected(c, d){
                 name: 'timesheet[project_id]',
                 resizable: true,
                 forceSelection: true
+            },{
+                fieldLabel: 'Utente',
+                xtype: "combo",
+                mode: 'local',
+                store: new Ext.data.SimpleStore({
+                    fields: ['user_id', 'user'],
+                    data: users_store
+                }),
+                allowBlank: false,
+                typeAhead: true,
+                displayField: 'user',
+                valueField: 'user_id',
+                id: 'user_id',
+                triggerAction: 'all',
+                disabled: project_current_id!="",
+                hiddenName: 'timesheet[user_id]',
+                name: 'timesheet[user_id]',
+                listeners:{
+                	select:function(c,v){
+	                	date_selected(Ext.getCmp("dp1"),Ext.getCmp("dp1").getValue(),c.getValue(),Ext.getCmp("project_id").getValue());
+                	}
+                },
+                resizable: true,
+                forceSelection: true
             }, {
                 fieldLabel: 'Note',
                 xtype: 'textarea',
@@ -141,12 +177,15 @@ function date_selected(c, d){
         
     }//if ts
     ts.findById("project_id").setValue(project_current_id);
-	
+    ts.findById("user_id").setValue(user_current_id);
     ts.findById("timesheet_date").setValue(d);
-	ts.setTitle("Inserimento Timesheet per il giorno " + d.format('d/m/Y') )
+    ts.setTitle("Inserimento Timesheet per il giorno " + d.format('d/m/Y') )
+    
     timesheet_store.load({
         params: {
             d: d.format('Y-m-d'),
+            pid:ts.findById("project_id").getValue(),
+            uid:ts.findById("user_id").getValue(),
             _method: 'GET'
         }
     })
@@ -222,6 +261,7 @@ function timesheet_refresh(){
     timesheet_store.load({
         params: {
             _method: 'GET',
+            uid:Ext.getCmp("user_id").getValue(),
             d: Ext.getCmp("timesheet_date").getValue().format('Y-m-d')
         }
     });

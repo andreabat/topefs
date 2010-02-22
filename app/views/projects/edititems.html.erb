@@ -292,7 +292,7 @@
 									create_order(sm.getSelections(),{
 																					budget_id:'<%=@project.id%>',
 																					project_id:'<%=@project.id%>',
-																					suppliers:<%=Supplier.find(:all).collect {|c| [c.ragionesociale,c.id]}.to_json%>,
+																					suppliers:<%=Supplier.find(:all,:order=>:ragionesociale).collect {|c| [c.ragionesociale,c.id]}.to_json%>,
 																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
 																					token:"<%=form_authenticity_token%>"
 																					});

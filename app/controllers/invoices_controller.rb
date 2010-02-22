@@ -47,7 +47,7 @@ class InvoicesController < ApplicationController
   
   def expired
       find_expired
-      render :json => @invoices.to_ext_json(:class=>:invoice,:count => @count,:methods=>[:expires,:expired],:include=>{:project=>{:only=>"title"}}) 
+      render :json => @invoices.to_ext_json(:class=>:invoice,:count => @count,:methods=>[:expires,:expired,:customer],:include=>{:project=>{:only=>"title"}}) 
   end
    def showbyprojectitem
     @object = Invoiceitem.find(:first,:conditions=>{:projectitem_id=>params[:id]})
@@ -74,6 +74,7 @@ class InvoicesController < ApplicationController
   end
   
   def create_from_pricing
+
     @object = Invoice.new(params[:invoice])
     pricing = Pricing.find(params[:id])
    # @object.budget_id=pricing.budget_id
@@ -90,7 +91,7 @@ class InvoicesController < ApplicationController
                              :category_id=>bi.category_id
         )
         logger.debug("will create new invoiceitem " + oi.to_json)
-        @object.invoiceitems<<oi
+        @object.invoiceitems<< oi
        }
        render :json => {:success => true,:id=>@object.id}.to_json
     else
@@ -119,7 +120,7 @@ class InvoicesController < ApplicationController
   end
   
   def create_document
-    
+     
     @object = Invoice.find(params[:id])
     @company =  @object.project.company 
     out = render_to_string :inline=>params[:html], :layout =>"output"
@@ -145,7 +146,7 @@ class InvoicesController < ApplicationController
     #template serve per la visualizzazione
     #creo prima il record prev
      @object = Invoice.new(params[:invoice])
-     logger.debug "fattura  e' #{@object.title}"
+     
      @object.user_id = current_user.id
      
      
@@ -160,7 +161,7 @@ class InvoicesController < ApplicationController
                         :projectitem_id=>bi.id,
                         :category_id=>bi.category_id
                      )
-                      @object.invoiceitems<<oi
+                      @object.invoiceitems<< oi
        }
        @company =  @object.project.company
       # out = render_to_string :action =>template
@@ -193,12 +194,14 @@ def odt
     path = File.join(RAILS_ROOT, 'doc','fattura.odt');
     name = "fattura_#{@object.code.gsub('/','_').rjust(8,'0')}.odt"
     outpath = File.join(RAILS_ROOT, 'public',  'document',name)
-    data = @object.invoiceitems.report_table(:all,:methods=>["line_description","totale"])
+    data = @object.invoiceitems.report_table(:all,:methods=>["line_description","totale","category_name"])
     totale = @object.total
     cf = (@object.project.customer.codicefiscale.nil?||@object.project.customer.codicefiscale.empty?) ? @object.project.customer.partitaiva : @object.project.customer.codicefiscale
     order = ""
     order = "RIFERIMENTO NS PREVENTIVO N. #{@object.pricing.code.rjust(8,"0")} DEL #{@object.pricing.created_at.l("%d-%m-%Y")}" if @object.pricing
-    
+    data.sort_rows_by!(["category_name","projectitem_id"])
+ #   data = Grouping.new(table,:by=>"category_name",:order => lambda { |x| x.to_s })
+#    puts table.as(:text)
     data.to_odt_template(   :template_file => path,
       :company=>@company,
       :invoice_date=>@object.created_at.l('%d/%m/%Y'),

@@ -8,8 +8,8 @@ class InvoicesController < ApplicationController
   include FileColumn
   include ActionView::Helpers::NumberHelper
   include Ruport::Data
-  
-  require_role ["admin","account"]
+  require_role "account"
+  require_role "admin",:for=>[:destroy,:payed,:create_from_pricing,:new_from_pricing,:edit,:create_document,:create,:update]
   
   def index
     @project=   Project.find(  params[:project_id] ) if     params[:project_id] 

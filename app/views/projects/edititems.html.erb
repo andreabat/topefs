@@ -261,6 +261,7 @@
 								"-",
 								{
 										text:"Fattura"	,
+										hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
 										iconCls:'icon_euro',
 										handler:function(){
 											//genero il nuovo preventivo
@@ -282,6 +283,7 @@
 								"-",
 								{
 								text:"Ordine"	,
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
 								iconCls:'icon_ordini',
 								handler:function(){
 									//genero il nuovo preventivo
@@ -302,6 +304,7 @@
 								{
 								text:"<%=:l_pricing.localize%>"	,
 								iconCls:'icon_preventivi',
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
 								handler:function(){
 									//genero il nuovo preventivo
 									if (!sm.getSelected()){
@@ -343,6 +346,7 @@
 					  
 					  {
                           text:'Aggiungi',
+                          hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
                           tooltip:'Aggiungi una voce',
                           handler: function(a,b,c){ 
 						  													//deselezione la griglia
@@ -354,6 +358,7 @@
                       },
 					  {
                           text:'Elimina',
+                          hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
                           tooltip:'Elimina Elemento',
 						  iconCls:'icon_delete',
 						  handler:function(){
@@ -394,6 +399,7 @@
 					  {
 										text:"Fattura"	,
 										iconCls:'icon_euro',
+										hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
 										handler:function(){
 											//genero il nuovo preventivo
 																if (!sm.getSelected()){
@@ -414,6 +420,7 @@
 						"-",
 						{
 								text:"Ordine"	,
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
 								iconCls:'icon_ordini',
 								handler:function(){
 									//genero il nuovo preventivo
@@ -433,6 +440,7 @@
 						"-",
 						{
 								text:"<%=:l_pricing.localize%>"	,
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
 								iconCls:'icon_preventivi',
 								handler:function(){
 									//genero il nuovo preventivo

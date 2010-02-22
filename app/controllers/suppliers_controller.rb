@@ -7,7 +7,8 @@ class SuppliersController < ApplicationController
   before_filter :find_supplier, :only => [ :show, :edit, :update, :destroy,:orders ]
   
   before_filter :login_required
-  require_role ["admin","account"]
+  require_role "account"
+  require_role "admin",:for=>[:create,:update,:new,:edit]
   
   # GET /suppliers
   # GET /suppliers.ext_json

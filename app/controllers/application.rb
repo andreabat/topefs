@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
   # Uncomment the :secret if you're not using the cookie session store
   protect_from_forgery # :secret => 'b00e56a724da1db6da215ffe3351b543'
 
-    ActiveRecord::Base.include_root_in_json=false
+  ActiveRecord::Base.include_root_in_json=false
 
   
   def set_version

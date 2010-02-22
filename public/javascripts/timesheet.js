@@ -2,12 +2,14 @@ var timesheet_store;
 var projects_store;
 var project_current_id;
 var user_current_id;
+var allow;
 var project_token;
 var timesheet_form_url = "/timesheet/create";
 function timesheet_setup(options){
     projects_store = options.projects;
     users_store = options.users;
     project_current_id = options.project_id;
+    allow = options.allow;
     user_current_id= options.user_id;
     project_token = options.token;
     timesheet_store = new Ext.data.JsonStore({
@@ -146,6 +148,7 @@ function date_selected(c, d,mystuff,myp){
                 typeAhead: true,
                 displayField: 'user',
                 valueField: 'user_id',
+                hidden:!allow,
                 id: 'user_id',
                 triggerAction: 'all',
                 disabled: project_current_id!="",

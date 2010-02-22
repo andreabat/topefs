@@ -1,4 +1,7 @@
 class CompaniesController < ApplicationController
+  require_role "account"
+  require_role "admin",:for=>[:create,:update,:new,:edit]
+
  layout "standard"
   before_filter :find_company, :only => [ :show, :edit, :update, :destroy ]
 

@@ -10,7 +10,9 @@ class OrdersController < ApplicationController
   include Ruport::Data
 
   before_filter :login_required
-  require_role ["admin","account"]
+
+  require_role "account"
+  require_role "admin",:for=>[:destroy,:payed,:not_payed,:edit,:create_document,:create,:update,,:edit]
   
   def index
     @project = Project.find(params[:project_id])

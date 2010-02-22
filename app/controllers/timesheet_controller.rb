@@ -1,5 +1,7 @@
 class TimesheetController < ApplicationController
   include AuthenticatedSystem
+  require_role ["account","admin","creativi"]
+#  require_role "admin",:for=>[:create,:update,:new,:edit]
   before_filter :login_required
 
   def index
@@ -16,6 +18,8 @@ class TimesheetController < ApplicationController
       else
 	      @uid = params[:uid]
       end
+      
+      
       
       format.ext_json { 
         d =  DateTime.parse(params[:d])

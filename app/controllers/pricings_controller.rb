@@ -11,7 +11,8 @@ class PricingsController < ApplicationController
    include ActionView::Helpers::NumberHelper
   
 before_filter :login_required
-  require_role ["admin","account"]
+  require_role "account"
+  require_role "admin",:for=>[:destroy,:approve,:documatic,:create_document,:create]
   
     def index
       @project = Project.find(params[:project_id])

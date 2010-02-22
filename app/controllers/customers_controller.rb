@@ -1,9 +1,8 @@
 class CustomersController < ApplicationController
 
   before_filter :find_customer, :only => [ :show, :edit, :update, :destroy ]
-  require_role "updater", :only => [:index]
-  require_role "viewer", :only => [:index]
-
+  require_role "account"
+  require_role "admin",:for=>[:create,:update,:new,:edit]
 
   layout "standard"
   # GET /customers

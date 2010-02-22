@@ -70,7 +70,7 @@ Ext.Ajax.request({
     {id: 'sh', header: "Visualizza", width: 20, renderer:function(a,b,r){return "<a target='_blank' href='/documents/show/" + r.get("pricing[document_id]") + "'>visualizza</a>"}
 	},
 	{id: 'op', header: "Oggetto", width: 50,dataIndex: 'pricing[title]'},
- 	{id: 'ap', header: "Approvato", width: 50,dataIndex: 'pricing[approved]',renderer:approved},
+ 	{id: 'ap', header: "Approvato", width: 50,dataIndex: 'pricing[approved]',renderer:approved,hidden:<%=current_user.has_role?('admin')?"false":"true"%>},
 	{id: 'bg', header: "Progetto", width: 20,dataIndex: 'pricing[project]'},
     {id: 'id', header: "Preventivo", width: 20, dataIndex: 'pricing[code]'},
 	
@@ -112,6 +112,7 @@ Ext.Ajax.request({
                   // inline toolbars
                   tbar:[{
                       text:'<%=:create.localize%> <%=:l_invoice.localize%>',
+                      hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
                       tooltip:'Crea fattura da preventivo',
                       handler: function(){ 
 					  		//chiamata AJAX
@@ -153,7 +154,9 @@ Ext.Ajax.request({
 					  		
                       iconCls:'add'
                   },
-				  { id: 'elimina_btn', iconCls:'icon_delete',type:"submit", text: '<%=:l_delete.localize%>',  handler:function(){
+				  { id: 'elimina_btn', iconCls:'icon_delete',type:"submit", text: '<%=:l_delete.localize%>',  
+				  hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+				  handler:function(){
 									 var selected = grid.getSelectionModel().getSelected();
 		                                 if(selected) {
 										  delete_pricing(selected,<%=@default_grid_page_size%>)

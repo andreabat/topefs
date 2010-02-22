@@ -15,7 +15,8 @@ class ProjectsController < ApplicationController
 #  require_role "updater",:for=>[:index]
 #  require_role "viewer",:for=>[:index]
 #  require_role "account",:except=>[:index]
-  require_role ["admin","account"],:except=>[:index]
+  require_role "account"
+  require_role "admin",:for=>[:create,:update,:new,:duplicate,:project_item_data,:odt]
   #:only => [:new,:create,:update,:destory]
 
 
@@ -191,6 +192,10 @@ def project_item_data
   end  
   
   def odt
+     unless current_user.has_role?("admin")
+	     access_denied
+     end
+  
     path = File.join(RAILS_ROOT, 'doc','timesheet.ods');
     name = "timesheet.odt"
     outpath = File.join(RAILS_ROOT, "public",  "timesheet",name)

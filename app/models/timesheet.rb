@@ -7,4 +7,5 @@ class Timesheet < ActiveRecord::Base
   def cost
     self.hours*self.user.hourly_cost
   end
+  
 end

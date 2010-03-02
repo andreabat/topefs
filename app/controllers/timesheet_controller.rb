@@ -25,7 +25,7 @@ class TimesheetController < ApplicationController
         d =  DateTime.parse(params[:d])
         t = Timesheet.find_all_by_user_id(@uid,:conditions=>['date=?',d])
         #  ext_json{:prova=>"Ciao",:data=>d.strftime("%d %m %Y")}
-        render :json=>t.to_ext_json(:class=>:timesheet,:include=>{:project=>{:only=>"title"}})
+        render :json=>t.to_ext_json(:class=>:timesheet,:include=>{:project=>{:only=>["title","code"]}})
       }
     end
     end

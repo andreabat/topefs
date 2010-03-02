@@ -21,6 +21,9 @@ function timesheet_setup(options){
             name: 'hours',
             type: 'float'
         }, {
+            name: 'code',
+            mapping: 'project.code'
+        }, {
             name: 'title',
             mapping: 'project.title'
         }, {
@@ -29,7 +32,7 @@ function timesheet_setup(options){
     });
     
     
-    var tpl = new Ext.XTemplate('<tpl for=".">', '<div id="hours_{id}">', '<fieldset><a href="#" onclick="timesheet_modifica({id})">modifica</a>|<a onclick="timesheet_elimina({id})" href="#">elimina</a>', '<br><b>Progetto</b>:{title}<br><b>Ore lavorate</b>:{hours}<br>', '<b>Note</b>:{notes}<br></fieldset>', '</div><hr>', '</tpl>');
+    var tpl = new Ext.XTemplate('<tpl for=".">', '<div id="hours_{id}">', '<fieldset><a href="#" onclick="timesheet_modifica({id})">modifica</a>|<a onclick="timesheet_elimina({id})" href="#">elimina</a>', '<br><b>Progetto</b>:[<b>{code}</b>] {title}<br><b>Ore lavorate</b>:{hours}<br>', '<b>Note</b>:{notes}<br></fieldset>', '</div><hr>', '</tpl>');
     
     var dp = new Ext.DatePicker({
         id:"dp1",
@@ -129,6 +132,7 @@ function date_selected(c, d,mystuff,myp){
                 typeAhead: true,
                 displayField: 'project',
                 valueField: 'id',
+				width:300,
                 id: 'project_id',
                 triggerAction: 'all',
                 disabled: project_current_id!="",

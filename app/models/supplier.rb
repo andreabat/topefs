@@ -1,5 +1,5 @@
 class Supplier < ActiveRecord::Base
-  
+  acts_as_reportable
 validates_presence_of :ragionesociale
 #validates_presence_of :partitaiva
 #validates_uniqueness_of(:partitaiva, :message => "Partita iva già utilizzata da un altro cliente, non è possibile duplicarla.")

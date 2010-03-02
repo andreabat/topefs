@@ -12,7 +12,7 @@ class OrdersController < ApplicationController
   before_filter :login_required
 
   require_role "account"
-  require_role "admin",:for=>[:destroy,:payed,:not_payed,:edit,:create_document,:create,:update,,:edit]
+  require_role "admin",:for=>[:destroy,:payed,:not_payed,:edit,:create_document,:create,:update]
   
   def index
     @project = Project.find(params[:project_id])
@@ -150,7 +150,31 @@ end
     f = Orderitem.find_by_projectitem_id(params[:id]).order
      redirect_to :action=> "index", :project_id=>f.project_id, :orderid=>f.id
  end
-
+ 
+ 
+ def elenco_generale_odt
+     unless current_user.has_role?("admin")
+       access_denied
+     end
+    path = File.join(RAILS_ROOT, 'doc','elenco_ordini.ods');
+    name = "elenco_ordini.ods"
+    outpath = File.join(RAILS_ROOT, "public",  "elenco_ordini",name)
+    table = Order.report_table(:all,
+                              :include=>{
+                                          :supplier=>{:only=>"ragionesociale"},
+                                          :project=>{:only=>"code"}
+                                         },
+                              :methods=>["total_report","iva_report","total_ivato_report"],
+                              :conditions => "year>=#{params['year']}")
+    table.sort_rows_by! ["year"],:order=>"descending"
+    table.to_ods_template(   :template_file => path,
+      :title=>"CRONOLOGICO ORDINI A FORNITORI #{params['year']}",
+      :output_file   =>outpath)
+#     @object.document=Document.new(:project_id=> @object.id, :doctype=>"timesheet",:user_id=>current_user.id)
+#     File.open(outpath)
+   #  @object.save
+     send_file(outpath,:filename=>name,:type=> "application/vnd.oasis.opendocument.text", :disposition => 'inline')
+  end
 
 protected
 def odt

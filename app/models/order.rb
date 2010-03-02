@@ -1,4 +1,6 @@
 class Order < Coded
+  include ActionView::Helpers::NumberHelper
+   acts_as_reportable
   belongs_to :project
  # belongs_to :budget
   belongs_to :document
@@ -17,7 +19,25 @@ class Order < Coded
       return t
   end
   
-
+  def total_report
+     
+      number_to_currency(self.total,:precision=>4,:delimiter=>".",:separator=>",") 
+      #return form t
+  end
+  
+  def iva_report
+      return "" if self.vat.nil?
+      number_to_currency(valore_iva,:precision=>2,:delimiter=>".",:separator=>",") 
+  end
+  
+  def total_ivato_report
+      number_to_currency(total+valore_iva,:precision=>4,:delimiter=>".",:separator=>",") 
+  end
+  
+  def valore_iva
+      return 0 unless self.vat
+      ((self.total/100)*(self.vat) )  
+  end
   
   
   def total_ivato

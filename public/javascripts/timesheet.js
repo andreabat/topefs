@@ -132,7 +132,7 @@ function date_selected(c, d,mystuff,myp){
                 typeAhead: true,
                 displayField: 'project',
                 valueField: 'id',
-				width:300,
+				listWidth:300,
                 id: 'project_id',
                 triggerAction: 'all',
                 disabled: project_current_id!="",

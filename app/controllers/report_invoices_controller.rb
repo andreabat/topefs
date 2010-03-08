@@ -24,7 +24,7 @@ class ReportInvoicesController < ApplicationController
         find_invoices
         render :json => @invoices.to_ext_json(:include=>{
                                           :paymentmethod=>{:only=>"paymentmethod"},
-                                          :project=>{:only=>"code"}
+                                          :project=>{:only=>"code",:methods=>[]}
                                             },
                                           :methods=>["status","euro_total","euro_iva","euro_imponibile","total","iva","imponibile","customer","expiration"]
         )  

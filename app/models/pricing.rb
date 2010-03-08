@@ -1,4 +1,6 @@
-class Pricing < ActiveRecord::Base
+class Pricing < Coded
+    include ActionView::Helpers::NumberHelper
+  acts_as_reportable
   belongs_to :project
 #  belongs_to :budget
   belongs_to :document, :dependent => :destroy
@@ -26,6 +28,12 @@ class Pricing < ActiveRecord::Base
         self.code= "#{self.code_abs}/#{Date.today.year}"
         self.year=Date.today.year
     end
+    
+    def status
+      return "Non approvato" if self.approved==0
+      return "Approvato il #{self.approval_date.l('%d/%m/%Y')}" if self.approved==1
+    end
+    
   def un_deletable
 #      logger.info ("Valore Approved:#{self.approved}")
 #      logger.info ("#{Pricing.last.id} - #{self.id}")

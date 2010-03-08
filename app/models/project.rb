@@ -1,4 +1,5 @@
 class Project < Coded
+  include ActionView::Helpers::NumberHelper
     validates_presence_of :customer
     before_create :set_code
     belongs_to :customer
@@ -71,7 +72,10 @@ class Project < Coded
 #        self.code= "#{(count+1)}/#{self.start.year}"
 #        self.year=self.start.year
 #    end
-    
+    def total
+      #presente al momento per non far sbroccare il missing method
+      #di pricing. Chissà perchè lo cerca in project ????
+    end
     def un_deletable
       self.invoices.length>0||self.proceeds.length>0||self.orders.length>0
     end

@@ -68,7 +68,11 @@
 	{header: 'Importo', dataIndex: 'order[total_ivato_report]',hidden:false,align:"right"},
 	{header: 'Iva', dataIndex: 'order[iva_report]',hidden:false,align:"right"},
 	{header: 'Totale', dataIndex: 'order[total_report]',hidden:false,align:"right"},
-	{header: 'Scadenza Fattura', dataIndex: 'order[expires_invoice]',renderer: Ext.util.Format.dateRenderer('d/m/Y'),hidden:false}
+	{header: 'Scadenza Fattura', dataIndex: 'order[expires_invoice]',renderer: function(a)
+															{
+																var dt = Date.parseDate(a,'Y-m-d');
+																return  Ext.util.Format.dateRenderer('d/m/Y')(dt)
+															}},
 	/*,
 	{header: 'Data Creazione', dataIndex: 'order[created_at]',renderer: Ext.util.Format.dateRenderer('d/m/Y H:i:s'),hidden:true},
     {header: 'Data Ultima Modifica', dataIndex: 'order[updated_at]',renderer: Ext.util.Format.dateRenderer('d/m/Y H:i:s'),hidden:true}*/

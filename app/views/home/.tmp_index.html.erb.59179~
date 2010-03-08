@@ -34,7 +34,6 @@
 	<ul class="lista_attivita">
 		<% if current_user.has_role?("admin") %>
 			<li><a  iconCls='icon_commesse' class="link_action" action="/report_orders/index" href="#">Elenco Ordini</a></li>
-			<li><a  iconCls='icon_commesse' class="link_action" action="/report_pricings/index" href="#">Elenco Preventivi</a></li>
 			<li><a  iconCls='icon_commesse' class="link_action" action="/report_invoices/index" href="#">Elenco Fatture</a></li>
 			<li><a  iconCls='icon_commesse' class="link_action" action="/projects/?format=odt" href="#">Stampa Foglio Timesheet</a></li>
 		<% end %>

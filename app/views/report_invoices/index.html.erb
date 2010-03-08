@@ -90,7 +90,11 @@ function annulla(id){
 	{id: 'id', header: "Totale", dataIndex: 'invoice[total]',align:"right"},
 	
 	{id: 'id', header: "Condizioni", dataIndex: 'invoice[paymentmethod]'},
-	{header: 'Scadenza', dataIndex: 'invoice[expiration]',renderer: Ext.util.Format.dateRenderer('d/m/Y')},
+	{header: 'Scadenza', dataIndex: 'invoice[expiration]',renderer: function(a)
+															{
+																var dt = Date.parseDate(a,'Y-m-d');
+																return  Ext.util.Format.dateRenderer('d/m/Y')(dt)
+															}},
 	{id: 'payed', header: "Status",   dataIndex: 'invoice[payed]',
 		renderer:function(v,a,r){
      		var ret =""
@@ -107,7 +111,7 @@ function annulla(id){
 				return ret
 				}},
     
-    {header: 'Data Pagamento', dataIndex: 'invoice[payed_date]',renderer:function(a){return  Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(a,'Y-m-d'))},width:10}
+    {header: 'Data Pagamento', dataIndex: 'invoice[payed_date]',renderer:function(a){return  Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(a,'Y-m-d'))}}
 	/*{header: 'Scadenza', width:10,dataIndex: 'invoice[expires]',renderer:function(a,b,r) {
 				if (r.get("invoice[expired]")&&r.get("invoice[payed]")!=true)
 						return "<span class='finance_alert'><b>"+ Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(a,'Y-m-d'))+"</b></span>"

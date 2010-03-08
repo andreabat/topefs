@@ -43,7 +43,8 @@ map.connect "/proceeds/:action/:id" ,:controller =>"proceeds"
 map.connect "/timesheet/:action" ,:controller =>"timesheet"
 map.connect "/timesheet/:data" ,:controller =>"timesheet"
 map.connect "/timesheet/:action/:data" ,:controller =>"timesheet"
-
+map.resources :reportorders
+map.resources :reportinvoices
   # The priority is based upon order of creation: first created -> highest priority.
 
   # Sample of regular route:

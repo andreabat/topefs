@@ -1,0 +1,32 @@
+{
+	title:"Commesse",
+	xtype:"panel",
+	iconCls:'icon_commesse',
+	contentEl:'home_attivita_commesse' 
+/*	footer:true,
+	bbar:new Ext.Toolbar({
+			items:[{text:"cerca"}]
+		})*/
+},
+{
+	title:"Clienti",
+	iconCls:'icon_clienti',
+	contentEl:'home_attivita_clienti'
+},
+{
+	title:"Fornitori",
+	iconCls:'icon_fornitori',
+	contentEl:'home_attivita_fornitori'
+},
+{
+	title:"Reports",
+	iconCls:'icon_report',
+	contentEl:'home_attivita_reports'
+}
+<% if !@current_user.is_a?(Symbol) && ( current_user.has_role?('admin'))%>
+,{
+	title:'Admin',
+	iconCls:'icon_admin',
+	contentEl:'home_attivita_admin'
+}
+<% end %> 

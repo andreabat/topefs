@@ -187,11 +187,30 @@ return;
 									    										    fields: ['payment','id'],
 									    										    data : options.paymentmethods
 									    										}),
+																				listeners:{
+																					select:function(c,v){
+																						var days = 0;
+																						debugger;
+																						var sdat = c.getRawValue();
+																						sdat = sdat.replace(/[a-z|\s]/gi,"")
+																						if(sdat!="")
+																							days =sdat 
+																						//lok for numbers in 
+																						
+																						Ext.getCmp("invoice[expires]").setValue(sdat);																					}
+																				},
 									    										typeAhead: true,
 									    										displayField :'payment',
 									    										valueField:'id',
 									    								        forceSelection:true
 																			  },
+																			   {
+																			    xtype:"numberfield",
+																			    fieldLabel:"giorni scadenza",
+																			    name:"invoice[expires]",
+																				id:"invoice[expires]"
+																			  },
+																			  
 																			  {
 																			    xtype:"numberfield",
 																			    fieldLabel:"IVA",

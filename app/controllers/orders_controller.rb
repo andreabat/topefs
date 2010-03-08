@@ -165,7 +165,7 @@ end
                                           :project=>{:only=>"code"}
                                          },
                               :methods=>["total_report","iva_report","total_ivato_report"],
-                              :conditions => "year>=#{params['year']}")
+                              :conditions => "year>=#{params['year']} and deleted=0")
     table.sort_rows_by! ["year"],:order=>"descending"
     table.to_ods_template(   :template_file => path,
       :title=>"CRONOLOGICO ORDINI A FORNITORI #{params['year']}",

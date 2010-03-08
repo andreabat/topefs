@@ -1,4 +1,6 @@
 class Invoice < Coded
+  include ActionView::Helpers::NumberHelper
+   acts_as_reportable
   belongs_to :project
  # belongs_to :budget
   belongs_to :document, :dependent => :destroy
@@ -8,20 +10,46 @@ class Invoice < Coded
   has_many :invoiceitems, :dependent => :destroy
   has_many :proceeds
   before_create :set_code
+
+   def status
+     description = ""
+     if (self.expired&&self.payed!=true)
+        description ="Scaduta"
+      else
+        description ="Non scaduta"
+      end 
+      
+      if(self.payed)
+        description += "| Pagata" 
+      else 
+        description += "| NON Pagata" 
+      end
+      
+      description
+        
+   end
   
-  
-  def expires
-    d = self.paymentmethod.paymentmethod.to_i
-    Date.parse(self.created_at.strftime('%Y/%m/%d'))+60
-  end
+#  def expires
+#    d = self.paymentmethod.paymentmethod.to_i
+#    Date.parse(self.created_at.strftime('%Y/%m/%d'))+60
+#  end
   
   def customer
   	self.project.customer.ragionesociale
   end
   
+  def expiration
+    #la data di scadenza calcolata aggiungendo i numeri di giorni presenti in expires
+    #con la data di creazione
+    return "" if (self.expires.nil?)
+    return "" if (self.expires==0)
+    Date.parse(self.created_at.strftime('%Y/%m/%d'))+self.expires.to_i
+  end
+
   def expired
-    return true if  (expires<=Date.today)
-     return false if  (expires>Date.today)
+    return false if expiration==""
+    return true if  (expiration==Date.today)
+     return false if  (expiration>Date.today)
   end
   
   def total
@@ -69,5 +97,23 @@ class Invoice < Coded
     def un_deletable
       f = (Invoice.last==self) && self.proceeds.length==0 && self.payed!=true
       return !f
+  end
+  
+  def method_missing(method, *args)
+    puts "Detected missing #{method}"
+    if ( method.to_s =~ /^euro_(.*)$/)
+       result = self.send($1.to_sym,*args)
+       return number_to_currency(result,:precision=>4,:delimiter=>".",:separator=>",")
+    else 
+      super
     end
+  end
+  def respond_to?(method_sym, include_private = false)
+    if method_sym.to_s =~ /^euro_(.*)$/
+      true
+    else
+      super
+    end
+  end
+  
 end

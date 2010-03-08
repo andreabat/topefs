@@ -45,7 +45,7 @@ class Order < Coded
     return t unless self.vat
     
     if t !=nil
-      ((t/100)*(self.vat) )  
+      t+=((t/100)*(self.vat) )  
     end  
   end
   

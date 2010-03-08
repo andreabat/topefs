@@ -12,7 +12,12 @@ class InvoicesController < ApplicationController
   require_role "admin",:for=>[:destroy,:payed,:create_from_pricing,:new_from_pricing,:edit,:create_document,:create,:update]
   
   def index
-    @project=   Project.find(  params[:project_id] ) if     params[:project_id] 
+     p_id = nil
+     p_id = params[:project_id]
+     unless p_id.nil?
+       p_id=nil if p_id.empty? 
+     end
+    @project=   Project.find(  p_id ) unless p_id.nil? 
     
     respond_to do |format|
       format.html   {render :layout =>"standard" } # index.html.erb (no data required)
@@ -20,7 +25,7 @@ class InvoicesController < ApplicationController
       format.ext_json { 
         f = find_invoices
         render :json => f.to_ext_json(:class => :invoice, :count => @count,
-                                                        :methods=>[:expires,:expired],
+                                                        :methods=>[:expiration,:expired],
                                                         :include=>{
                                                                             :user=>{:only=>"login"},
                                                                             :project=>{:only=>"title"}
@@ -47,7 +52,7 @@ class InvoicesController < ApplicationController
   
   def expired
       find_expired
-      render :json => @invoices.to_ext_json(:class=>:invoice,:count => @count,:methods=>[:expires,:expired,:customer],:include=>{:project=>{:only=>"title"}}) 
+      render :json => @invoices.to_ext_json(:class=>:invoice,:count => @count,:methods=>[:expiration,:expired,:customer],:include=>{:project=>{:only=>"title"}}) 
   end
    def showbyprojectitem
     @object = Invoiceitem.find(:first,:conditions=>{:projectitem_id=>params[:id]})
@@ -309,7 +314,8 @@ def excel
 #     sheet1.row(53)[2]= "#{@object.vat} %" unless !@object.vat
 
      name = "fattura_#{@object.code.gsub('/','_').rjust(8,'0')}.xls"
-     path =File.join(RAILS_ROOT, 'public',  'document',name);
+     #"
+     path =File.join(RAILS_ROOT, 'public',  'document',name)
      book.write path
      
      @object.document=Document.new(:project_id=> @object.project_id, :doctype=>"fattura",:user_id=>current_user.id)
@@ -330,9 +336,11 @@ end
   
  def find_invoices
       pagination_state = update_pagination_state_with_params!(:invoice)
-      condition = {:conditions => "project_id="+params[:project_id]} if params[:project_id]
+      condition = {}
+      condition = {:conditions => "project_id="+params[:project_id]} unless params[:project_id].empty?
       condition = {:conditions => "id="+params[:invoiceid]} if params[:invoiceid]
 #      condition = {:conditions => "project_id="+params[:budget_id]} if params[:budget_id]
+    
       @count = Invoice.count(:all,condition)
       @invoices= Invoice.find(:all,options_from_pagination_state(pagination_state).merge(condition))
   end

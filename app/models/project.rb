@@ -55,6 +55,27 @@ class Project < Coded
        t
     end
     
+    def approved_pricings
+      a = []
+      a << "<ul>"
+      a << self.pricings.find_all_by_approved(true).collect{|x| 
+          "<li><a  target='_blank' href='/documents/show/#{x.document_id}'>#{x.code}</a></li>"
+          }
+          
+      a << "</ul>"
+      a.join("")
+    end
+    
+    def approved_invoices
+      a = []
+      a << "<ul>"
+      a << self.invoices.find(:all,:conditions=>["deleted=0"]).collect{|x| 
+          "<li><a  target='_blank' href='/documents/show/#{x.document_id}'>#{x.code}</a></li>"
+          }
+      a << "</ul>"
+      a.join("")
+    end
+    
     def order_total
        t=0
        self.orders.each{ |i| t+=i.total_ivato}

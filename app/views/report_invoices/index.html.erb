@@ -171,14 +171,15 @@ function annulla(id){
 								}
 					]
 					
-				  }),
+				  })
+				   ,
                   bbar: new Ext.PagingToolbar({
-                            pageSize: <%=@default_grid_page_size%>,
+                            pageSize: 2000,
                             store: ds,
                             displayInfo: true,
                             displayMsg: 'Record {0} - {1} of {2}',
                             emptyMsg: 'Nessun record trovato.'
-                  })
+                  }) 
                   
               });
 
@@ -190,7 +191,7 @@ function annulla(id){
               ds.load({
                           params: { 
                                     start: 0, 
-                                    limit: <%=@default_grid_page_size%>,
+                                    limit: 2000,
                                     fields:'',
 									year:'<%=@year%>',
                                     query:''

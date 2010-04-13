@@ -74,19 +74,26 @@ class ReportInvoicesController < ApplicationController
   end
   def find_invoices
     pagination_state = update_pagination_state_with_params!(:invoice)
-    all_opts = options_from_pagination_state(pagination_state).merge(options_from_search(:invoice))
+    all_opts = options_from_pagination_state(pagination_state)
+    #all_opts[:limit]=9219319239123129
+    #.merge(options_from_search(:invoice))
+   # all_opts = options_from_search(:invoice)
+   
     all_opts[:conditions]=[]
     #.merge({:conditions => "status_id=1"})
     #print (all_opts)
+    
     all_opts[:conditions] << "deleted=0 and year=#{params[:year]}" #unless  params[:year].nil?
+    #all_opts[:order]= "#{params[:sort]} #{params[:dir]}"
+    #all_opts[:order]=params[:sort]
     
     
-    puts all_opts[:conditions]
     #    @res = Order.find(:all,        
     #                           :conditions => "",
     #                          :order=>"id desc")
-    @count = Invoice.count(:all,options_from_search(:invoice))
+    @count = Invoice.count(:all,all_opts)
     @invoices = Invoice.find(:all,all_opts)
+    puts all_opts[:order]
   end
   
   

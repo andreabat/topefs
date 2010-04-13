@@ -217,6 +217,8 @@ def odt
       :total=> (number_to_currency totale),
       :imponibile=> (number_to_currency @object.imponibile),
       :delivery=>@object.delivery,
+      :pricing_code=> @object.pricing_id>0 ? @object.pricing.code : nil, 
+      :notes=> @object.notes,
       :bank=> @object.bank,
       :payment=> @object.paymentmethod ? @object.paymentmethod.paymentmethod : "",
       :code=>"#{@object.code.rjust(8,"0")}",

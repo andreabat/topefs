@@ -141,7 +141,7 @@ Ext.Ajax.request({
 																					project_id:'<%=@project.id%>',
 																					from_pricing:"/invoices/create_from_pricing/" + selected.data.id,
 																					bank:a.bank,
-																					title :a.title,
+																					title :selected.data["pricing[title]"],
 																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
 																					token:"<%=form_authenticity_token%>"
 																					});

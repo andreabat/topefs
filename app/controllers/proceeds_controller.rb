@@ -23,15 +23,21 @@ class ProceedsController < ApplicationController
   
   end
    
+   def delete
+         Proceed.delete(params[:id])
+           render :json=> {:success => true}.to_json
+   end
   
  def create
      @object = Proceed.new(params[:proceed])
-      @object.user_id = current_user.id
+     @object.amount = params[:proceed][:amount].sub(/,/,".")
+     @object.user_id = current_user.id
      if @object.save
        @invoice=@object.invoice
        render :json=> {:success => true ,:income=>@invoice.income}.to_json
        #:total=>@invoice.total,:imponibile=>@invoice.imponibile,
      else
+       puts @object.errors
        render :json =>  {:success => false}.to_json
      end
  end

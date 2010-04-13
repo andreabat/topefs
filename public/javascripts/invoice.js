@@ -23,10 +23,12 @@
 					
 				},
 				{
-					xtype: "numberfield",
 					fieldLabel: "Incasso",
-					name: "proceed[amount]"
-					
+					name: "proceed[amount]",
+					xtype:"textfield",
+					vtype:'numeric',
+					id:"proceed[amount]",
+					decimalSeparator:","
 				},
 				{
 					xtype: "datefield",
@@ -53,6 +55,8 @@
 				
 					handler:function(){
 					//action per il salvataggio..
+					
+					//Ext.getCmp("proceed[amount]").setValue(Ext.getCmp("proceed[amount]").getValue().replace(",","."))
 					frm_proceeds.getForm().submit({
 																			success:function(a,b,c){
 																					Ext.Msg.alert("Status","Dato creato.")
@@ -103,12 +107,15 @@
 	}
 	
 	function show_proceeds(c,t){
-
 	//	if(!proc_mgr)proc_mgr = new Ext.Updater("info-hotspot");
+	
 	if (parent.add_tab) {
-	 
 		parent.add_tab("/proceeds/index?&invoice_id=" + c, 'Dettaglio fattura ' + t);
-	}else
+	}else if (parent.build_parent_tab) {
+		parent.build_parent_tab("/proceeds/index?&invoice_id=" + c, 'Dettaglio fattura ' + t)
+	}
+	else
+	
 	{
 		window.open ("/proceeds/index?&invoice_id=" + c, 'Dettaglio fattura ' + t);
 	}
@@ -168,14 +175,22 @@ return;
 															},
 										                border:true,
 														items:[
-																			    
+																			     {
+																			    xtype:"datefield",
+																				allowBlank:false,
+																			    fieldLabel:"Data Fattura",
+																			    name:"invoice[created_at]",
+																				id:"invoice[created_at]",
+																				format:'d-m-Y',
+																				altFormat:'Y-m-d'
+																			  }, 
 																			  {
 																			    xtype:"textfield",
 																			    fieldLabel:"Oggetto",
 																				allowBlank:false,
 																				id:'invoice_subject',
 																			    name:"invoice[title]",
-																				width:200
+																				width:250
 																			  },{
 																			    xtype:"combo",
 																			    fieldLabel:"Pagamento",
@@ -204,6 +219,7 @@ return;
 									    										valueField:'id',
 									    								        forceSelection:true
 																			  },
+																			  
 																			   {
 																			    xtype:"numberfield",
 																			    fieldLabel:"giorni scadenza",
@@ -358,10 +374,10 @@ return;
 						//prendi il valore di ritorno dell'id
 						var o = Ext.decode(b.responseText)
 						current_id=b.result.id;
-						parent.add_tab("/invoices/edit/"+current_id + ".odt","Fattura " + b.result.code)
-					 	    //window.open();
+						window.open("/invoices/edit/"+current_id + ".odt")
+					 	
 						p.getForm().reset();
-						gs.load();
+						//gs.load();
 //						gs.getById(current_id).set("invoiced",true);
 						win_invoice.close();
 					})
@@ -401,8 +417,11 @@ return;
 				              method: 'GET',
 				        		url: "/invoices/payed/" + id  + "?date=" + Ext.getCmp("dp_ordini").getValue().format("Y-m-d")
 								 
-							    });
-                            window.location.reload();
+							    ,success:function(){
+									window.location.reload();
+									}		
+								});
+                            
                         }
                     }
                 }]
@@ -415,12 +434,30 @@ return;
 		
 		}
 		
+		function delete_proceed(id){
+			Ext.Msg.confirm("Elimina Pagamento","Confermi eliminazione del pagamento ?",function(o){
+				if(o=="yes"){
+				Ext.Ajax.request({
+					method: 'GET',
+					url: "/proceeds/delete/" + id,
+					success: function(){
+						window.location.reload();
+					}
+				});
+				}
+			}
+			);
+		}
+		
 		function invoice_not_payed(id){
 			Ext.Ajax.request({
               method: 'GET',
-        		url: "/invoices/not_payed/" + id 
+        		url: "/invoices/not_payed/" + id,
+				success:function(){
+					window.location.reload();	
+				} 
 			    });
-				window.location.reload();
+				
 		}
 
 		

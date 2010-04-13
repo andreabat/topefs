@@ -1,0 +1,127 @@
+<%= javascript_include_tag "invoice.js" %>
+<script type="text/javascript">
+//<![CDATA[
+          var proceed_datastore = new Ext.data.Store({
+                  proxy: new Ext.data.HttpProxy({
+                             url: '/proceeds?format=ext_json',
+                             method: 'GET'
+                         }),
+                  reader: new Ext.data.JsonReader({
+                              root: 'proceeds',
+                              id: 'id',
+                              totalProperty: 'results'
+                          },
+                          [ {name: 'proceed[id]', mapping: 'id'},
+						  	{name:"proceed[login]",mapping:'user.login'},
+							{name:"proceed[invoice_code]",mapping:'invoice.code'},
+							{name: 'proceed[project_id]', mapping: 'project_id'},
+							{name: 'proceed[invoice_id]', mapping: 'invoice_id'},
+							{name: 'proceed[user_id]', mapping: 'user_id'},
+							{name: 'proceed[amount]', mapping: 'amount'},
+							{name: 'proceed[date]', mapping: 'date'},
+							{name: 'proceed[created_at]', mapping: 'created_at'},
+							{name: 'proceed[updated_at]', mapping: 'updated_at'} 
+						]),
+                  // turn on remote sorting
+                  remoteSort: true,
+                  sortInfo: {field: 'date', direction: 'ASC'}
+              });
+
+//]]>
+</script>
+<% javascript_tag do -%>
+  var proceed_column_model = new Ext.grid.ColumnModel([
+    {id: 'id', header: "Nr.", width: 20, dataIndex: 'proceed[id]'},
+	{header: 'Incasso', dataIndex: 'proceed[amount]',renderer:Ext.util.Format.euroMoney},
+	{header: 'Fattura', dataIndex: 'proceed[invoice_code]'},
+    {header: 'Utente',  dataIndex: 'proceed[login]'},
+	{header: 'Data Incasso', dataIndex: 'proceed[date]',renderer:function(a){return Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(a,'Y-m-d'))}}
+	,{header:"Elimina", dataIndex: 'proceed[id]',renderer:function(a){
+		return "<a href='javascript:delete_proceed("+a+")'>elimina</a>"
+	}}
+  ]);
+ 
+<% end -%>
+<script type="text/javascript">
+//<![CDATA[
+          Ext.onReady(function(){
+
+              Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+
+              var ds = proceed_datastore;
+
+              var cm = proceed_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                  ds: ds,
+                  cm: cm,
+                  loadMask:true,
+                  sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                  renderTo:   'proceed-grid',
+                  title:      '<%= :listing.l + " " +  :l_proceed.l%>',
+                  id:         'proceed-grid',
+//                  width:      540,
+					autoWidth:true,
+                  height:     600,
+                  stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  },
+
+                  // inline toolbars
+				  <% if @invoice %>
+                  tbar:[{
+				  		text:'<%=:grid_new.l << " " << :l_proceed.l%>',
+						iconCls:'add',
+						handler:add_proceed.bind(this,'<%=@invoice.id if @invoice%>','<%=@invoice.project_id if @invoice%>')
+				  }],
+				  <% end %> 
+                  bbar: new Ext.PagingToolbar({
+                            pageSize: <%=@default_grid_page_size%>,
+                            store: ds,
+                            displayInfo: true,
+                            displayMsg: 'Record {0} - {1} of {2}',
+                            emptyMsg: 'Nessun record trovato.'
+                  })
+                  
+              });
+			  
+              ds.baseParams={fields:'',query:''<%=",project_id:#{params[:project_id]}" if params[:project_id]%> <%=",invoice_id:#{params[:invoice_id]}" if params[:invoice_id]%>}
+              ds.load({
+                          params: { 
+                                    start: 0, 
+                                    limit:5 ,
+                                    fields:'',
+                                    query:''
+                                    
+                                    }
+                        });
+
+          });
+
+//]]>
+</script>
+<%if @invoice%>
+<fieldset style="font-size:10px">
+	<legend><%=:a_summary.l%> <%=:l_invoice.l%> <b><%=@invoice.code%></b></legend>
+			<div>
+			Progetto:<span><b><%=@invoice.project.title%></b></span><br>
+			Totale Fatturato:<b><span id="proceed-imponibile"><%=number_to_currency @invoice.imponibile%></span> <span id="proceed-total">(<%=number_to_currency @invoice.total%> ivato)</span></b><br>
+			Totale Incassato:<b><span id="proceed-income"><%=number_to_currency @invoice.income%></span></b>
+			</div>
+			<hr> 
+			<% if !@invoice.payed%>
+			<div >Una fattura verrà automaticamente segnata come pagata quando gli incassi eccederanno il totale fatturato.<br>
+			<a href="#" onclick="invoice_payed(<%=@invoice.id%>,this)">Segna la fattura come pagata manualmente</a></div>
+			<%else%>
+			<div>La fattura risulta pagata.<br>
+			<a href="#" onclick="invoice_not_payed(<%=@invoice.id%>,this)">Segna la fattura come NON pagata manualmente</a></div>
+			<% end %>
+			
+			 
+	</fieldset>
+<%end%>
+			<div id="proceed-grid"></div>

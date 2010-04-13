@@ -303,7 +303,7 @@ return;
 	
 		
 		 
-		function verifyIfAllowed(items,field,value){
+		function verifyIfAllowed(items,field,value,msg){
 			var valid = true;
 
 			items.each(function(r){
@@ -313,7 +313,7 @@ return;
 				}
 			});
 			if (!valid){
-				Ext.Msg.alert("Errore","Impossibile creare una fattura/ordine/preventivo con un elemento già precedentemente fatturato/ordinato/preventivato.\nEventualmente disdire la fattura/ordine a cui è associato");
+				Ext.Msg.alert("Errore",msg||"Impossibile creare una fattura/ordine/preventivo con un elemento già precedentemente fatturato/ordinato/preventivato.\nEventualmente disdire la fattura/ordine a cui è associato");
 				return false;
 			}
 			return true;

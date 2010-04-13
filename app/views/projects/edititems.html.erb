@@ -362,6 +362,9 @@
                           tooltip:'Elimina Elemento',
 						  iconCls:'icon_delete',
 						  handler:function(){
+						  	var msg = "Impossibile eliminare una voce che è stata fatturata o approvata in preventivo"
+						  	  if (!verifyIfAllowed(sm.getSelections(),"invoiced",true,msg)||
+							  !verifyIfAllowed(sm.getSelections(),"priced",true,msg) ) return;
 						  	  Ext.Msg.confirm("Attenzione!","Proseguire nella eliminazione <b>definitiva</b> degli elementi selezionati?",
 							  function(btn){
 								  if(btn == 'yes'){

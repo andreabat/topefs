@@ -1,0 +1,976 @@
+<%= javascript_include_tag "groupsummary.js" %>
+<%= javascript_include_tag "orders.js" %>
+<%= javascript_include_tag "pricing.js" %>
+<%= javascript_include_tag "invoice.js" %>
+<%= javascript_include_tag "swfobject.js" %>
+<style>
+	.item_ordered{
+		background-color:#658ADD;
+		text-decoration:none;
+		color:#ffffff
+	}
+	.item_invoiced{
+		background-color:#38C113;
+		text-decoration:none;
+		color:#ffffff
+	}
+	.item_priced{
+		background-color:#C01365;
+		text-decoration:none;
+		color:#E4F49B
+	}
+</style>
+<script type="text/javascript">
+    //<![CDATA[
+    var totals=$H();
+    var projectitem;
+    var win, win_orders,win_prevs;
+	var categories_store ,gs;
+     Ext.onReady(function(){
+		     // Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+              Ext.QuickTips.init();
+              Ext.form.Field.prototype.msgTarget = 'side';
+				//Ext.example.msg('Info','Le modifiche al budget vengono salvate <b><i>as you type</i></b>.');
+    		  projectitem=Ext.data.Record.create([
+    			{name: 'id', type: 'int'},
+                {name: 'description', type: 'string'},
+                {name: 'project_id', type: 'int'},
+    			{name: 'category_id', type: 'int'},
+				{name: 'invoiced'},
+				{name: 'ordered'},
+				{name: 'priced'},
+				{name: 'pricedna'},
+				{name: 'new_category_name', type: 'string'},
+    			{name: 'category', type: 'string',mapping:'category.name'},
+                {name: 'quantity', type: 'float'},
+                {name: 'cost', type: 'float'},
+     			{name: 'total_cost', type: 'float'},
+    			{name: 'total_price', type: 'float'},
+    			{name: 'markup', type: 'int'},
+    			{name: 'markup_perc', type: 'int'},
+                {name: 'price', type: 'float'}
+    			]);
+ 
+	  	 
+			  categories_store = new Ext.data.Store({
+                  proxy: new Ext.data.HttpProxy({
+                             url: '/projects/categories',
+                             method: 'GET'
+                         }),
+                  reader: new Ext.data.JsonReader({
+                              root: 'categories',
+                              id: 'id'
+                          },
+                          [ 'id','name' ])
+              });	
+			categories_store.load();
+    		  var reader = new Ext.data.JsonReader(
+    		  				{
+            					id:'id'
+           				    },projectitem);
+    		  
+ 
+    		  var cc=<%= @project.projectitems.to_json(:include=>{:category=>{:only=>"name"}}) %>;
+    		  
+    
+      function neditor(){
+      	return new Ext.form.NumberField({
+      		allowBlank: true,
+      		allowNegative: false,
+      		style: 'text-align:left',
+			grow:true
+      	});
+      }
+     function teditor(){
+      	return new Ext.form.TextArea({
+      		allowBlank: false,
+			grow:true,
+			autoWidth:true
+      	});
+      }
+    
+    
+     	// define a custom summary function
+        var summary = new Ext.grid.GrandTotalSummary(); 
+    	var boldRenderer = function(v){
+			 
+    					return "<b class='"+ (v<=0?"finance_alert":"finance_ok")+"'>" + Ext.util.Format.euroMoney(v) + "</b>"
+    				}
+      
+        Ext.grid.GroupSummary.Calculations['totalCost'] = function(v, record, field){
+
+					if(record.data.cost=="")record.data.cost=0
+		    		if (!record.data.quantity||isNaN(record.data.quantity))
+		    			return v+ parseFloat(record.data.cost);
+		    		
+		            return v + (parseFloat(record.data.quantity) * parseFloat(record.data.cost));
+        }
+    
+    	Ext.grid.GroupSummary.Calculations['totalPrice'] = function(v, record, field){
+			if(record.data.price=="")record.data.price=0
+		    	if (!record.data.quantity)
+		    			return v+parseFloat(record.data.price);
+		    		
+		            return v + (parseFloat(record.data.quantity) * parseFloat(record.data.price));
+        }
+      
+        Ext.grid.GroupSummary.Calculations['markup'] = function(v, record, field){
+				
+				if(record.data.price=="")record.data.price=0
+				if (record.data.price==0) return 0
+	    		var t = (record.data.quantity?record.data.quantity:1) * record.data.price - (record.data.quantity?record.data.quantity:1) * record.data.cost;
+	            return v + (t);
+        }
+    	
+    	  Ext.grid.GroupSummary.Calculations['markup_perc'] = function(v, record, field){
+		  	if(record.data.price=="")record.data.price=0
+			if(record.data.cost=="")record.data.cost=0
+			if (record.data.price==0) return 0
+    	  	var cost = (record.data.quantity?parseFloat(record.data.quantity):1) *parseFloat(record.data.cost);
+    		var t = (record.data.quantity?parseFloat(record.data.quantity):1)* parseFloat(record.data.price);
+    		if(!totals[record.data.category_id]) totals[record.data.category_id]={total_cost:0,total_price:0};
+    		totals[record.data.category_id].total_cost += (record.data.quantity?parseFloat(record.data.quantity):1) * parseFloat(record.data.cost)
+    		totals[record.data.category_id].total_price += (record.data.quantity?parseFloat(record.data.quantity):1) * parseFloat(record.data.price)
+			
+			var r = ( (totals[record.data.category_id].total_price/totals[record.data.category_id].total_cost -1)*100).toFixed(2) ;
+			if (r=="Infinity") r=100;
+		
+    		return r;
+        }
+      var sm = 	new Ext.grid.RowSelectionModel({singleSelect:false,hidden:true}); //new Ext.grid.CheckboxSelectionModel({singleSelect:false});
+      sm.on("beforerowselect",function(){
+	  	return false;
+	  });
+
+   
+
+	 function selection_renderer(a,b,c,d,e,f){
+	 	return "<input type='checkbox' onclick='fake_select(this,"+d+");'>";
+	 }
+      var projectitem_column_model = new Ext.grid.ColumnModel([
+	  		sm,
+			{id: 'fake', header: "Selezione",dataIndex: 'invoiced',width:15,renderer:selection_renderer},  
+			{id: 'stato', header: "Stato",dataIndex: 'invoiced',width:15,renderer:invoice_renderer},  
+//	    	{id: 'invoiced', header: "F",dataIndex: 'invoiced',width:9,renderer:invoice_renderer},      		 
+//			{id: 'ordered', header: "O",dataIndex: 'ordered',width:9,renderer:invoice_renderer},      		 
+//			{id: 'priced', header: "Pr",dataIndex: 'priced',width:9,renderer:invoice_renderer},      		 
+//			{id: 'stato', header: "Stato",dataIndex: 'invoiced',width:15,renderer:invoice_renderer},  
+			{id: 'description',editor: teditor(), header: "Descrizione", width: 20, dataIndex: 'description',
+    			summaryRenderer: function(v, params, data){
+                        return "Totale ";
+                    }},
+    		{id: 'quantity',editor: neditor(), header: "Quantità", width: 10, dataIndex: 'quantity'},
+    		{id: 'cost',editor: neditor(), header: "Costo", width: 20, dataIndex: 'cost', renderer: Ext.util.Format.euroMoney},
+    		{id: 'total_cost', header: "Costo Totale", width: 20,
+    				sortable: false,
+                    groupable: false,
+                    renderer: function(v, params, record){
+    					if(!record.data.quantity)
+    						return Ext.util.Format.euroMoney(record.data.cost);
+                        return Ext.util.Format.euroMoney(record.data.quantity * record.data.cost);
+                    },
+                    summaryType:'totalCost',
+                    summaryRenderer: boldRenderer
+    		},
+    		{id: 'price',editor: neditor(), header: "Importo", width: 20, dataIndex: 'price',renderer:function(c){
+				
+				if (parseFloat(c).toFixed(4)==0.000){
+					return "costo vivo";
+				}else
+				return Ext.util.Format.euroMoney(c);
+			} },
+    		
+    		{id: 'total_price', header: "Importo Totale", width: 20,
+    				sortable: false,
+                    groupable: false,
+                    renderer: function(v, params, record){
+						if (parseFloat(record.data.price).toFixed(4)==0.000){
+							return "costo vivo";
+						}
+    					if(!record.data.quantity)
+    						return Ext.util.Format.euroMoney(record.data.price);
+    						
+                        return Ext.util.Format.euroMoney(record.data.quantity * record.data.price);
+                    },
+                    summaryType:'totalPrice',
+                    summaryRenderer: boldRenderer
+    		},
+    		
+    		{id: 'markup', header: "Markup", width: 20,
+    				sortable: false,
+                    groupable: false,
+                    renderer: function(v, params, record){
+						if (parseFloat(record.data.price).toFixed(4)==0.000){
+							return "costo vivo";
+						}
+    					var t = (record.data.quantity?record.data.quantity:1) * record.data.price - (record.data.quantity?record.data.quantity:1) * record.data.cost;
+    					
+    				    return Ext.util.Format.euroMoney(t) ;
+                    },
+                    summaryType:'markup',
+                    summaryRenderer: boldRenderer
+    		}
+    		,
+    		{id: 'markup_perc',editor: neditor(), header: "%", width: 15,
+    				sortable: false,
+                    groupable: false,
+                    renderer: function(v, params, record){
+						if (parseFloat(record.data.price).toFixed(4)==0.000){
+							return "costo vivo";
+						}
+    					var cost = (record.data.quantity?record.data.quantity:1) * record.data.cost;
+    					var t = (record.data.quantity?record.data.quantity:1)* record.data.price;
+						    				    
+    					var p ;
+						if (cost>0) 
+							p= ((t /cost -1) *100).toFixed(2);
+						else
+							p=100;
+
+                        return "<b>" + p + "%</b>";
+                    },
+                    summaryType:'markup_perc',
+                    summaryRenderer: function(v){return "<b>" + v + "%</b>"}
+    		}
+    		,
+    		{id: 'category_id', header: "Categoria", width: 20, dataIndex: 'category_id',hideable:false,renderer:function(v,b,r){return r.get("category")}}
+    		
+      		]);
+
+                  var cm = projectitem_column_model;
+    			 gs = new Ext.data.GroupingStore({
+    		            reader: reader,
+						autoLoad:true,
+						 proxy: new Ext.data.HttpProxy({
+                             url: '/projects/list_item_data/<%=@project.id%>/?format=ext_json',
+                             method: 'GET'
+                         }),
+//    		            data: cc,
+    					sortInfo:{field: 'id', direction: "ASC"},
+    		            groupField:'category_id'
+    			        });
+    			  
+                  cm.defaultSortable = true;
+                  // create the grid
+                  var grid = new Ext.grid.GridPanel({
+				  	 //clicksToEdit:1,
+                      ds: gs,
+   				  	  bbar: new Ext.Toolbar({
+   		  				items:[
+						        "Genera:",
+								"-",
+								{
+										text:"Fattura"	,
+										hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+										iconCls:'icon_euro',
+										handler:function(){
+											//genero il nuovo preventivo
+																if (!sm.getSelected()){
+																	Ext.Msg.alert("Info","Selezionare delle voci da inserire in fattura.");
+																	return;
+																}
+																create_invoice(sm.getSelections(),{
+																					budget_id:'<%=@project.id%>',
+																					project_id:'<%=@project.id%>',
+																					bank:'<%=@project.customer.coordinatebancarie%>',
+																					title :'<%=escape_javascript(@project.title)%>',
+																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
+																					token:"<%=form_authenticity_token%>"
+																					});
+																
+															}
+								},
+								"-",
+								{
+								text:"Ordine"	,
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+								iconCls:'icon_ordini',
+								handler:function(){
+									//genero il nuovo preventivo
+									if (!sm.getSelected()){
+										Ext.Msg.alert("Info","Selezionare delle voci da inserire nell'ordine.");
+										return;
+									}
+									create_order(sm.getSelections(),{
+																					budget_id:'<%=@project.id%>',
+																					project_id:'<%=@project.id%>',
+																					suppliers:<%=Supplier.find(:all,:order=>:ragionesociale).collect {|c| [c.ragionesociale,c.id]}.to_json%>,
+																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
+																					token:"<%=form_authenticity_token%>"
+																					});
+								}
+								},
+								"-",
+								{
+								text:"<%=:l_pricing.localize%>"	,
+								iconCls:'icon_preventivi',
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+								handler:function(){
+									//genero il nuovo preventivo
+									if (!sm.getSelected()){
+										Ext.Msg.alert("Info","Selezionare delle voci da inserire nel preventivo.");
+										return;
+									}
+									create_pricing(sm.getSelections(),{
+																					budget_id:'<%=@project.id%>',
+																					project_id:'<%=@project.id%>',
+																					title :'<%=escape_javascript(@project.title)%>',
+																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
+																					token:"<%=form_authenticity_token%>"
+																					});
+										}
+									}
+  								]}),
+    				  plugins: summary,
+                      cm: cm,
+                      loadMask:true,
+                      sm: sm,
+                      renderTo:   'budget-grid',
+                      title:      '<%= :a_edit.l + " " + :l_budget.l << " " << escape_javascript(@project.title)%>',
+                      id:         'gitems',
+                      width:      getViewPort(30).width,
+                      height:     getViewPort(1).height,
+                      stripeRows: true,
+					  collapsible:false,
+                      viewConfig: {
+                          forceFit:true
+                      },
+    				 view: new Ext.grid.GroupingView({
+                forceFit:true,
+                showGroupName: false,
+                enableNoGroups:false, // REQUIRED!
+                hideGroupedColumn: true
+            }),
+                      // inline toolbars
+                      tbar:[
+					  
+					  {
+                          text:'Aggiungi',
+                          hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+                          tooltip:'Aggiungi una voce',
+                          handler: function(a,b,c){ 
+						  													//deselezione la griglia
+																			Ext.getCmp("gitems").getSelectionModel().clearSelections(); 
+																			item_window(true);
+						    							},
+    					  		
+                          iconCls:'add'
+                      },
+					  {
+                          text:'Elimina',
+                          hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+                          tooltip:'Elimina Elemento',
+						  iconCls:'icon_delete',
+						  handler:function(){
+						  	var msg = "Impossibile eliminare una voce che è stata fatturata o approvata in preventivo"
+						  	  if (!verifyIfAllowed(sm.getSelections(),"invoiced",true,msg)||
+							  !verifyIfAllowed(sm.getSelections(),"priced",true,msg) ) return;
+						  	  Ext.Msg.confirm("Attenzione!","Proseguire nella eliminazione <b>definitiva</b> degli elementi selezionati?",
+							  function(btn){
+								  if(btn == 'yes'){
+								  	var ids = []
+		                              sm.getSelections().each(function(r){
+		                                  ids.push(r.data.id);
+		                              })
+		                              if (ids.length > 0) {
+		                                  Ext.Ajax.request({
+		                                      url: '/budgets/<%=@project.id%>',
+											  method:"DELETE",
+											  params:{ids:ids,<%="#{request_forgery_protection_token}:'#{form_authenticity_token}'"%>},
+		                                      success: function(a, b, c){
+											  		gs.load();
+		                                      }
+		                                  });
+                              		}
+								  }
+							  
+							  });
+                              
+						  }
+					},
+					{
+                          tooltip:'aggiorna',
+						  iconCls:'x-btn-text x-tbar-loading',
+                          handler: function(a,b,c){ 
+	  													gs.load();
+						    							} 
+                      },
+					"->",
+					  
+					  "Genera:",
+					  "-",
+					  {
+										text:"Fattura"	,
+										iconCls:'icon_euro',
+										hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+										handler:function(){
+											//genero il nuovo preventivo
+																if (!sm.getSelected()){
+																	Ext.Msg.alert("Info","Selezionare delle voci da inserire in fattura.");
+																	return;
+																}
+																create_invoice(sm.getSelections(),{
+																					budget_id:'<%=@project.id%>',
+																					project_id:'<%=@project.id%>',
+																					bank:'<%=@project.customer.coordinatebancarie%>',
+																					title :'<%=escape_javascript(@project.title)%>',
+																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
+																					token:"<%=form_authenticity_token%>"
+																					});
+																
+															}
+						},
+						"-",
+						{
+								text:"Ordine"	,
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+								iconCls:'icon_ordini',
+								handler:function(){
+									//genero il nuovo preventivo
+									if (!sm.getSelected()){
+										Ext.Msg.alert("Info","Selezionare delle voci da inserire nell'ordine.");
+										return;
+									}
+									create_order(sm.getSelections(),{
+																					budget_id:'<%=@project.id%>',
+																					project_id:'<%=@project.id%>',
+																					suppliers:<%=Supplier.find(:all).collect {|c| [c.ragionesociale,c.id]}.to_json%>,
+																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
+																					token:"<%=form_authenticity_token%>"
+																					});
+								}
+						},
+						"-",
+						{
+								text:"<%=:l_pricing.localize%>"	,
+								hidden:<%=current_user.has_role?('admin')?"false":"true"%>,
+								iconCls:'icon_preventivi',
+								handler:function(){
+									//genero il nuovo preventivo
+									if (!sm.getSelected()){
+										Ext.Msg.alert("Info","Selezionare delle voci da inserire nel preventivo.");
+										return;
+									}
+									create_pricing(sm.getSelections(),{
+																					budget_id:'<%=@project.id%>',
+																					project_id:'<%=@project.id%>',
+																					title :'<%=escape_javascript(@project.title)%>',
+																					paymentmethods:<%=Paymentmethod.find(:all).collect {|c| [c.paymentmethod,c.id]}.to_json%>,
+																					token:"<%=form_authenticity_token%>"
+																					});
+								}
+						}
+    						  
+  						
+					  ] 
+                      
+                  });
+    			 var fn  = function(d){
+    			 	var data = {
+    					total_cost:0,
+    					total_price:0,
+    					total_markup:0,
+    					markup_style:'',
+    					perc_markup:0
+    				}
+					totals=$H();
+    				gs.each(function(r){
+    					data.total_cost+= r.get("cost")*(r.get("quantity")?r.get("quantity"):1);
+    					data.total_price+=r.get("price")*(r.get("quantity")?r.get("quantity"):1);
+    				});
+    				data.perc_markup = 	(data.total_price/data.total_cost-1)*100;
+    				data.total_markup = data.total_price-data.total_cost;
+    				data.total_cost=Ext.util.Format.euroMoney(data.total_cost);
+    				data.total_price=Ext.util.Format.euroMoney(data.total_price);
+					
+					
+					
+    				if(data.total_markup<=0) data.markup_style="finance_alert";
+    				else	
+    					data.markup_style="finance_ok";
+    				data.total_markup=Ext.util.Format.euroMoney(data.total_markup);
+    				
+    				data.perc_markup = isNaN(data.perc_markup.toFixed(2)) ? "0" : data.perc_markup.toFixed(2);
+    			 	financeTpl.overwrite("_finanze",data);
+				/*	if(is_iframe && parent.$("info-hotspot"))
+						 {parent.$("info-hotspot").update($("_finanze").innerHTML)}*/
+						
+	
+    			 }
+                 gs.on("load",fn);
+    			 gs.on("datachanged",fn);
+                 gs.on("add",fn);
+    			 gs.on("remove",fn);
+    			 gs.on("update",fn);
+                 gs.on("clear",fn);
+    			 
+				 gs.on("add",remoteUpdate);
+    			 gs.on("remove",remoteUpdate);
+    			 gs.on("update",remoteUpdate);
+				 
+				 //disabilito il select su link
+				  
+				 
+				 
+    			 gs.fireEvent("load");
+//				 grid.on("sortchange",function(o){debugger})
+				 grid.fireEvent("sortchange",{direction: "ASC",
+														    field: "description"})		
+				grid.on("rowdblclick",function(a,b,c,e){
+						var r = a.getStore().getAt(b);
+						item_window(false,r);
+ 										 
+				})	;														
+				
+				grid.on("beforeedit",function(e){
+					var cmod = e.grid.getColumnModel();
+					var cname=cmod.getColumnById(cmod.getColumnId(e.column));
+					
+					//if(e.record.get("invoiced"))
+					
+				})
+				
+              });
+			  
+			  
+			  function remoteUpdate(data,r,c){
+			  	 
+				  		if(!r.data)
+							r = r[0];
+						 
+						var d = {<%="#{request_forgery_protection_token}: '#{form_authenticity_token}'" %>};
+						$H(r.data).each(function(pair){
+							
+							if(pair.key.indexOf("markup")<0 && pair.key.indexOf("total_")<0&& pair.key!=("category")){
+									d["projectitem[" + pair.key + "]"]=pair.value;
+									}
+						}//each
+						)//fun
+						var isNew = (r.get("id")?false:true);
+						
+						Ext.Ajax.request({
+						   url: '/projectitem/' + (r.get("id")?r.get("id"):""),
+						   success: function(a,b,c){
+						   	
+								//Ext.example.msg('Info', 'Dati aggiornati.')
+								//assegnare il nuovo id...
+								var o = Ext.decode(a.responseText);//oggetto DATA dal server
+										if (isNew){
+											data.suspendEvents();
+											r.set("id",o.data["projectitem[id]"])
+											data.resumeEvents();
+											gs.load();
+										}
+										if (r.data.new_category_name){
+											categories_store.load();
+											
+										}
+
+											
+								},
+						   failure: function(){debugger;},
+						   params: d
+						});
+			
+				 
+				 
+			  }
+			  
+    			var financeTpl = new Ext.XTemplate(
+                    '<div class="x-grid3-summary-row">',
+					'<div>Commessa:<b>[<%=@project.code%>] <%=escape_javascript(@project.title)%></b></div>',
+					//'<div>Budget:<b><%=escape_javascript(@project.title)%> (n.<%=@project.id%>)</b></div>',
+    				'<div>Cliente:<b><%=escape_javascript(@project.customer.ragionesociale)%></b></div>',
+    				'<div>Modifcata da:<b><%=@project.user.login%></b> il  <%=@project.updated_at.l(:long)%></div>',
+    				'<div><br></div>',
+                    '<fieldset><legend>Prospetto Finanziario</legend>',
+    				'<table class="x-grid3-summary-table" border="0" cellspacing="0" cellpadding="0" style="{tstyle}">',
+    					'<tbody>',
+    					'<tr><td>Totale Importo:</td><td align="right"><b>{total_price}</b></td></tr>',
+    					'<tr><td colspan="2">&nbsp;</td></tr>',					
+                        '<tr><td>Totale Costi:</td><td align="right"><b>{total_cost}</b></td></tr>',
+                        '<tr><td colspan="2"><hr></td></tr>',					
+    					'<tr><td>Totale Markup:</td><td align="right" class="{markup_style}"><b>{total_markup}</b></td></tr>',
+    					'<tr><td >     % Markup:</td><td align="right" class="{markup_style}"><b>{perc_markup}%</b></td></tr>',
+    					'</tbody>',
+                    '</table>',
+    				'</fieldset>',
+    				'</div>'
+                );
+                 financeTpl.disableFormats = true;
+    			 financeTpl.compile();
+    
+    function save_projectitem(){
+    	var f = Ext.getCmp("form_projectitem");
+    	var grid = Ext.getCmp("gitems");
+    	var p = new projectitem({project_id:<%=params[:id]%>});
+		if (grid.current_record) {
+ 			p = grid.current_record;
+		} 
+		Ext.getCmp("quantity").setValue(Ext.getCmp("quantity").getValue().replace(",","."));
+		Ext.getCmp("price").setValue(Ext.getCmp("price").getValue().replace(",","."));
+		Ext.getCmp("cost").setValue(Ext.getCmp("cost").getValue().replace(",","."));
+		f.getForm().updateRecord(p)	;
+//		p.set("category",Ext.getCmp("category_id").getRawValue());
+	
+		if (isNaN(parseInt(Ext.getCmp("category_id").getValue()))){
+			var new_category_name=Ext.getCmp("category_id").getRawValue();
+			p.set("new_category_name",new_category_name);
+		}else
+		{
+			p.set("category_id",parseInt(Ext.getCmp("category_id").getValue()));		
+		}
+			
+		 
+//        grid.stopEditing();
+		if(!grid.current_record)
+	        grid.store.add(p);
+//		grid.getView().collapseAllGroups() ;
+//	 	grid.getView().refresh(true);
+		f.getForm().reset();
+		grid.store.sort( "category_id", "ASC");
+    	win.hide();
+    }
+	
+	function invoice_renderer(a,b,c){
+		var t = "<span ><a href='#' class='{0}' onclick='show_item(\"{1}\",{2})'>{3}</a></span>";
+		var bf = ""				 ;
+		var a = ["ordered","invoiced","priced","pricedna"];
+		var tx = ["[O]","[F]","[P]","[L]"];
+		var i=-1;
+//		c.data.invoiced=true
+//		c.data.ordered=true
+//		c.data.priced=true
+		
+		Ext.each(a,function(item){
+			i++;
+			if(!c.data[item]) return;
+			bf+=String.format(t,"item_" + item,item,c.get("id"),tx[i])
+			
+		});					 
+		return bf;		
+	}
+	function item_window(isnew,r){
+		Ext.getCmp("gitems").current_record=r;
+		 
+		if(!win){
+						                win = new Ext.Window({
+						                    el:'hello-win',
+						                    layout:'fit',
+						                    width:500,
+						                    height:400,
+//						    				animate:true,
+											closeAction:'hide',
+						                    plain: false,
+						                    
+						                    items: new Ext.form.FormPanel({
+						                        renderTo : 'add-form',
+						                        deferredRender:false,
+						    					id:'form_projectitem',
+						    					frame:true,
+						    					monitorValid:true,
+						    					waitMsgTarget:true,
+						    					listeners:{
+						    						'clientvalidation':{
+						    								fn:function(form,valid){
+						    									Ext.getCmp("save_projectitem").setDisabled(!valid);
+						    								}
+						    						}
+						    					},
+						                        border:true,
+						    					items:[
+															 
+																{
+						    										fieldLabel:'Categoria',
+						    										xtype:"combo",
+						    										mode:'local',
+						    										store : categories_store,
+						    										allowBlank:false,
+						    										displayField :'name',
+						    										valueField:'id',
+																	id:'category_id',
+						    										name:'category_id',
+						    										resizable:false
+						    							 
+															}
+						    								,
+															{
+																fieldLabel:'Descrizione',
+																autoGrow:false,
+																xtype:'textarea',
+                                anchor:"90%",
+                                height:150,
+																name:'description',
+																allowBlank:false
+															},
+						    								{
+						    										fieldLabel:'Quantità',
+						    										xtype:"textfield",
+						    										vtype:'numeric',
+																	id:'quantity',
+						    										name:'quantity'
+						    								},
+						    								{
+						    									   fieldLabel:'Costo',
+						    										xtype:"textfield",
+																	id:"cost",
+						    										vtype:'numeric',
+																	decimalSeparator:",",
+						    										name:'cost'
+						    								},
+						    								{
+						    										fieldLabel:'Importo',
+																	id:"price",
+						    										xtype:"textfield",
+																	decimalSeparator:",",
+						    										allowBlank:false,
+						    										vtype:'numeric',
+						    										name:'price'
+						    								},
+															{
+																xtype:"panel",
+																id:"panel_item_info",
+																hidden:isnew,
+																items:[
+																		{
+																			xtype:"label",
+																			id:"label_invoiced"
+
+																		},
+																		{
+																			xtype:"label",
+																			id:"label_ordered"
+
+																		},
+																		{
+																			xtype:"label",
+																			id:"label_priced"
+
+																		}
+																
+																]
+															}
+						    								
+						    							]//formpanel items
+						    					
+						                    }),
+						    
+						                    buttons: [{
+						                      
+											 
+						                        disabled:true,
+						    					handler:function(){
+													
+						    						save_projectitem();
+						    					},
+						    					id:'save_projectitem'
+						                    },{
+						                        text: 'Annulla',
+						                        handler: function(){
+						                            win.hide();
+						                        }
+						                    }]
+						                });
+						            }
+									Ext.getCmp("cost").setDisabled(false);
+									Ext.getCmp("price").setDisabled(false);
+									Ext.getCmp("quantity").setDisabled(false);
+									
+									if (!isnew&&r){
+										Ext.getCmp("form_projectitem").setTitle("Modifica voce");
+										Ext.getCmp("save_projectitem").setText("Modifica");
+										Ext.getCmp("panel_item_info").show();
+										Ext.getCmp("form_projectitem").getForm().loadRecord(r);
+										Ext.getCmp("quantity").setValue(Ext.getCmp("quantity").getValue().replace(".",","));
+										Ext.getCmp("price").setValue(Ext.getCmp("price").getValue().replace(".",","));
+										Ext.getCmp("cost").setValue(Ext.getCmp("cost").getValue().replace(".",","));
+										if (r.get("ordered") == true) {
+											Ext.getCmp("label_ordered").setText("La voce è assegnata ad un ordine attivo.<br>", false);
+											Ext.getCmp("cost").setDisabled(true);
+											Ext.getCmp("form_projectitem").getForm().markInvalid([{
+												id: 'cost',
+												msg: "Poichè la voce è stata ordinata, non è possibile modificarne il costo"
+											},
+											{
+												id: 'quantity',
+												msg: "Poichè la voce è stata ordinata, non è possibile modificarne la quantità"
+											}]);
+										}
+										else 
+											Ext.getCmp("label_ordered").setText("La voce non è assegnata ad un ordine attivo.<br>", false);
+										
+										if (r.get("invoiced") == true) {
+											var cf="";
+											if (parent.add_tab){
+												cf = "parent.add_tab('/invoices/showbyprojectitem/"+ r.get("id") + "','Fattura '" +r.get("id")+ ")";
+											}else
+												cf = "window.open('/invoices/showbyprojectitem/"+ r.get("id")+ "')";
+										 
+											Ext.getCmp("label_invoiced").setText("La voce è assegnata ad una fattura attiva ( <a href=\"#\" onclick=\""+cf+"\">vedi fattura</a>).<br>",false);
+											Ext.getCmp("price").setDisabled(true);
+											Ext.getCmp("quantity").setDisabled(true);
+											Ext.getCmp("form_projectitem").getForm().markInvalid([{
+												id: 'price',
+												msg: "Poichè la voce è stata fatturata,non è possibile modificarne l'importo"
+											},
+											{
+												id: 'quantity',
+												msg: "Poichè la voce è stata fatturata, non è possibile modificarne la quantità"
+											}]);
+										}
+										else 
+											Ext.getCmp("label_invoiced").setText("La voce non è assegnata ad un fattura attiva.<br>",false);
+										
+											
+										if (r.get("priced") == true) {
+											 var cf="";
+											if (parent.add_tab){
+												cf = "parent.add_tab('/pricings/showbyprojectitem/"+ r.get("id") + "','Preventivo '" +r.get("id")+ ")";
+											}else
+												cf = "window.open('/pricings/showbyprojectitem/"+ r.get("id")+ "')";
+											 
+											Ext.getCmp("label_priced").setText("La voce è assegnata ad un preventivo approvato ( <a href=\"#\" onclick=\""+cf+"\">vedi preventivo</a>).<br>",false);
+											//disabilito la voce importo e quantità
+											Ext.getCmp("price").setDisabled(true);
+											Ext.getCmp("form_projectitem").getForm().markInvalid([{
+												id: 'price',
+												msg: "Poichè la voce è stata prevenitivata ed il preventivo congelato, non è possibile modificarne l'importo"
+											},
+											{
+												id: 'quantity',
+												msg: "Poichè la voce è stata prevenitivata ed il preventivo congelato, non è possibile modificarne la quantità"
+											}]);
+											Ext.getCmp("quantity").setDisabled(true);
+											
+										}
+										else 
+											Ext.getCmp("label_priced").setText("La voce non è assegnata ad un preventivo approvato.<br>",false);
+									}else
+									{
+										Ext.getCmp("form_projectitem").setTitle("Inserimento nuova voce al progetto");
+										Ext.getCmp("save_projectitem").setText("Crea");
+										Ext.getCmp("panel_item_info").hide();
+										Ext.getCmp("form_projectitem").getForm().reset();
+									}
+						            win.show();
+	}
+ 
+ function show_item(what,id){
+ 	var url = "/{0}/{1}";
+	var controller="";
+	var title;
+	
+	
+	switch(what){
+		case "ordered":
+			controller="orderitem";
+			title ="Ordine " + id;
+			break;
+		case "invoiced":
+			controller="invoiceitem";
+			title ="Fattura " + id;			
+			break;
+		case "priced":
+			//cambiare url ?
+			controller="pricingitem";
+			title ="Preventivo " + id;			
+			break;
+		case "pricedna":
+			//cambiare url ?
+			controller="pricingitem";
+			title ="Preventivi non approvati contenenti " + id;
+			id+="?dna=true"			
+			break;
+			
+	}
+	if (parent && parent.add_tab) {
+		parent.add_tab(String.format(url, controller, id), title);
+	}else{
+		window.location = String.format(url, controller, id);
+	}
+ }
+ 
+ function fake_select(obj,i){
+
+ 	var grid =Ext.getCmp("gitems");
+
+	var col = grid.getSelectionModel();
+		col.suspendEvents();
+	if (obj.checked){
+	//	var r = grid.dataSource.getAt(i);
+	//    col.selections.add(r);
+		col.selectRow(i,true,false);
+	}else
+	{
+		col.deselectRow(i,false,false);
+	}
+col.resumeEvents();
+	
+ }
+ 
+    //]]>
+    
+
+
+    
+</script>
+<table width="100%">
+	
+    <tr>
+        
+       
+     
+			<td >
+            <div id="budget-grid">
+            </div>
+        </td>
+		 <td valign="top" width="35%">
+            <fieldset>
+                <legend>
+                    Riepilogo
+                </legend>
+                <div id="_finanze">
+                </div>
+            </fieldset>
+        </td>
+	</tr>
+</table>
+<div id="hello-win" class="x-hidden">
+    <div class="x-window-header">
+        Gestione Voci di Progetto
+    </div>
+    <div class="x-window-body">
+        <div id="add-form">
+        </div>
+    </div>
+</div>
+
+<div id="orders-win" class="x-hidden">
+    <div class="x-window-header">
+        Informazioni per generazione dell'ordine
+    </div>
+    <div class="x-window-body">
+        <div id="add-order">
+        </div>
+	</div>
+</div>
+
+<div id="pricing-win" class="x-hidden">
+    <div class="x-window-header">
+        Informazioni per generazione del preventivo
+    </div>
+    <div class="x-window-body">
+        <div id="add-pricing">
+        </div>
+	</div>
+</div>
+
+<div id="invoice-win" class="x-hidden">
+    <div class="x-window-header">
+        Informazioni per generazione fattura
+    </div>
+    <div class="x-window-body">
+        <div id="add-invoice">
+        </div>
+	</div>
+</div>

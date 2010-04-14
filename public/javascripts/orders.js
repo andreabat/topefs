@@ -74,6 +74,15 @@
 																			  },
 																			  {
 																			    xtype:"textfield",
+																			    fieldLabel:"Sconto",
+																			    name:"order[discount]",
+																				id :"order[discount]",
+																				value:0,
+																				vtype:'numeric',
+																				decimalSeparator:","
+																			  },
+																			  {
+																			    xtype:"textfield",
 																			    fieldLabel:"Oggetto",
 																				allowBlank:false,
 																			    name:"order[title]"
@@ -285,7 +294,14 @@
 //				value: options.budget_id
 //			});
 			
+			
 			form_orders.doLayout();
+			
+			if (Ext.getCmp("order[discount]").getValue()==""){
+				Ext.getCmp("order[discount]").setValue(0);
+			}
+			Ext.getCmp("order[discount]").setValue(Ext.getCmp("order[discount]").getValue().replace(",","."));
+			
 			form_orders.getForm().submit({
 				waitMsg:"Salvataggio in corso",
 				url: '/orders/create',

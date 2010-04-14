@@ -159,6 +159,7 @@ end
     path = File.join(RAILS_ROOT, 'doc','elenco_ordini.ods');
     name = "elenco_ordini.ods"
     outpath = File.join(RAILS_ROOT, "public",  "elenco_ordini",name)
+    
     table = Order.report_table(:all,
                               :include=>{
                                           :supplier=>{:only=>"ragionesociale"},
@@ -180,16 +181,17 @@ protected
 def odt
     path = File.join(RAILS_ROOT, 'doc','ordine.odt');
     name = "ordine_#{@object.code.gsub('/','_').rjust(8,'0')}.odt"
+    #"
     outpath = File.join(RAILS_ROOT, 'public',  'document',name)
     data = @object.orderitems.report_table(:all,:methods=>["line_description","totale","category_name"])
     totale = @object.total
+    
     @object.vat
     
     
 #    data.sort_rows_by!("categoty_name")
     data.sort_rows_by!(["category_name","projectitem_id"])
-    
-    
+ 
     #puts @company.cap_comune_nazione
     data.to_odt_template(   :template_file => path,
       :title=>"ORDINE DI LAVORO #{@object.created_at.year}",
@@ -197,6 +199,7 @@ def odt
       :order_date=>@object.created_at.l('%d/%m/%Y'),
       :supplier=>@object.supplier,
       :total=> (number_to_currency totale),
+      :discount=>(@object.discount.nil?||@object.discount==0)?nil: (number_to_currency @object.discount),
       :delivery=>@object.delivery,
       :people=>@object.people,
       :payment=> @object.paymentmethod ? @object.paymentmethod.paymentmethod : "",

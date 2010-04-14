@@ -16,7 +16,8 @@ class Order < Coded
          q = x.quantity ? x.quantity : 1
           t +=  (x.cost)*(q)
       }
-      return t
+      return t-self.discount unless self.discount.nil?
+      return t if  self.discount.nil?
   end
   
   def total_report

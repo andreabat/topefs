@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20100305161926) do
+ActiveRecord::Schema.define(:version => 20100414131344) do
 
   create_table "categories", :force => true do |t|
     t.string "name", :limit => 200, :null => false
@@ -130,6 +130,7 @@ ActiveRecord::Schema.define(:version => 20100305161926) do
     t.boolean  "deleted",                                          :null => false
     t.integer  "year"
     t.string   "code",               :limit => 20
+    t.integer  "discount"
   end
 
   create_table "paymentmethods", :force => true do |t|

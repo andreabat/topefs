@@ -67,7 +67,14 @@
 
               var cm = pricing_column_model;
               cm.defaultSortable = true;
-
+			 
+			 var _ss = new Ext.ux.grid.Search({
+				  			id:"_ss",
+                              position:'top',
+							  checkIndexes:['pricing[approval_date]','pricing[customer]','pricing[job]'],
+							  searchText:'<%=:grid_search.localize%>'
+                          });
+			 
               // create the grid
               var grid = new Ext.grid.GridPanel({
                   ds: ds,
@@ -86,11 +93,26 @@
 				  tbar: new Ext.Toolbar({
 				  	items:[
 								{text:"Stampa elenco",handler:function(){
+										var app ="";
 									if (Ext.getCmp("_approvati").getValue()==true){
-										window.open("index?format=odt&year=<%=@year%>&approvati=1")
-									}else
-									 	window.open("index?format=odt&year=<%=@year%>")
-									 
+										app="&approvati=1"
+									} 
+										
+									 var query = "index?format=odt&year=<%=@year%>" + app;
+									 var val = _ss.field.getValue();
+									 var fields = [];
+						            _ss.menu.items.each(function(item) {
+						                if(item.checked) {
+						                    fields.push(item.dataIndex);
+						                }
+						            });
+										if (fields.length>0){
+											query+= "&fields=[\"" + fields.join("\",\"") + "\"]"
+										}
+									    if(val!=""){
+											query+= "&query=" + val
+										}
+									 window.open(query);
 									 
 								}},
 								"-",
@@ -106,6 +128,11 @@
 									xtype:"checkbox",
 									id:"_approvati",
 									checked:<%=(params[:approvati].nil?)?"false":"true"%>,
+									listeners:{
+										check:function(control,value){
+											pricing_datastore.baseParams["approvati"]=value?1:""
+										}
+									},
 									text:"Solo Approvati",
 									inputValue:1
 								},"-",
@@ -122,7 +149,8 @@
 								}
 					]
 					
-				  })
+				  }),
+                  plugins:[_ss]
 				  /*,
 				  
 				  

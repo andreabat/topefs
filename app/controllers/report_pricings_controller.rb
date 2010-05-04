@@ -16,7 +16,7 @@ class ReportPricingsController < ApplicationController
       format.html   {render :layout =>"standard" } # index.html.erb (no data required)
       
       format.odt{
-        find_pricings
+      # find_pricings
         odt
       }
       
@@ -51,7 +51,8 @@ class ReportPricingsController < ApplicationController
                                              :project=>{:only=>"code",:methods=>[],:include=>{:customer=>{:only=>"ragionesociale"}}},
                                             },
                                             :methods=>["status","total","euro_total","euro_discount"],
-                              :conditions => " #{(params[:approvati].nil?)?'':'approved=1 and'} year>=#{params['year']}")
+                              :conditions => build_query) 
+                              #" #{(params[:approvati].nil?)?'':'approved=1 and'} year>=#{params['year']}")
     
     
     
@@ -67,21 +68,70 @@ class ReportPricingsController < ApplicationController
     send_file(outpath,:filename=>name,:type=> "application/vnd.oasis.opendocument.text", :disposition => 'inline')
     
   end
-  def find_pricings
-    pagination_state = update_pagination_state_with_params!(:pricing)
-    all_opts = options_from_pagination_state(pagination_state).merge(options_from_search(:pricing))
-    all_opts[:conditions]=[]
-    cond  = "year=#{params[:year]}" #unless  params[:year].nil?
-    cond = cond + " and approved=#{params[:approvati]}" unless  params[:approvati].nil?
-    all_opts[:conditions] << cond
-    
-    puts "***************"
-    puts all_opts[:conditions]
-    
+#  def find_pricings
+#    pagination_state = update_pagination_state_with_params!(:pricing)
+#    all_opts = options_from_pagination_state(pagination_state).merge(options_from_search(:pricing))
+#    all_opts[:conditions]=[]
+#    cond  = "year=#{params[:year]}" #unless  params[:year].nil?
+#    cond = cond + " and approved=#{params[:approvati]}" unless  params[:approvati].nil?
+#    all_opts[:conditions] << cond
+#    
+#    puts "***************"
+#    puts all_opts[:conditions]
+#    
+#    @count = Pricing.count(:all,all_opts)
+#    puts "*****************+++"
+#    @pricings = Pricing.find(:all,all_opts)
+#  end
+def find_pricings
+    all_opts={:conditions => build_query }
     @count = Pricing.count(:all,all_opts)
-    puts "*****************+++"
     @pricings = Pricing.find(:all,all_opts)
-  end
+end
 
+  def build_query 
+    
+    #return if params[:query].nil?
+    search_conditions = [] 
+    query = ""
+    unless params[:fields].nil?
+    ActiveSupport::JSON::decode(params[:fields]).each do |field|
+                field.sub!(/(\A[^\[]*)\[([^\]]*)\]/,'\2') # fields may be passed as "object[attr]"
+                value = nil
+                oper = "LIKE"
+                if (field=="customer")
+                  field='project_id'
+                  oper = " in ("
+                  cs = Customer.find(:first,:conditions=>"ragionesociale LIKE '%#{params[:query]}%'")
+                  unless cs.nil?
+                    valid_ids=cs.projects.reject{|p|p.year!=params[:year]}.map{|p|p.id}
+                    #print valid_ids.join(",")
+                    value = valid_ids.join(",") + ")" 
+                  end
+                elsif (field=="job")
+                  field='project_id'
+                  oper = "="
+                  code = params[:query]
+                  code = "#{code}/#{params[:year]}" unless (code.include?"/#{params[:year]}")
+                  pro = Project.find(:first,:conditions=>{:code=>code})
+                  value = "#{pro.id}" unless pro.nil?
+                elsif (field=="approval_date")
+                  oper = "between"
+                  a = params[:query].split("/").reverse.join("-")
+                   
+                  value = " '#{a} 00:00:00' AND '#{a} 23:59:59' "
+                else
+                  value = "'%#{params[:query]}%'"
+                end
+                
+                search_conditions << "#{field} #{oper} #{value}" unless value.nil?
+      query = "(" << search_conditions.join(' OR ') << ") AND " unless params[:query].empty?
+     end unless params[:query].nil?
+     end
+    query << " approved=#{params[:approvati]} AND" unless  params[:approvati].nil? or params[:approvati].empty?
+    query << " year=#{params[:year]}" #unless  params[:year].nil?
+    puts query
+    query
+  end
   
 end

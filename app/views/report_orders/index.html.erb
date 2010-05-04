@@ -88,7 +88,13 @@
 
               var cm = order_column_model;
               cm.defaultSortable = true;
-
+				
+				var _ss = new Ext.ux.grid.Search({
+				  			id:"_ss",
+                              position:'top',
+							  checkIndexes:['order[created_at]','order[supplier]','order[job]'],
+							  searchText:'<%=:grid_search.localize%>'
+                          });
               // create the grid
               var grid = new Ext.grid.GridPanel({
                   ds: ds,
@@ -118,8 +124,24 @@
 									
 								},
 								"-",{text:"Stampa elenco",handler:function(){
-									 window.open("index?format=odt&year=<%=@year%>")
+									 var query = "index?format=odt&year=<%=@year%>";
+						 
 									 
+									 var val = _ss.field.getValue();
+									 var fields = [];
+						            _ss.menu.items.each(function(item) {
+						                if(item.checked) {
+						                    fields.push(item.dataIndex);
+						                }
+						            });
+										if (fields.length>0){
+											query+= "&fields=[\"" + fields.join("\",\"") + "\"]"
+										}
+									    if(val!=""){
+											query+= "&query=" + val
+										}
+									 
+									 window.open(query);
 									 
 								}},
 								"-",
@@ -148,7 +170,8 @@
                             displayInfo: true,
                             displayMsg: 'Record {0} - {1} of {2}',
                             emptyMsg: 'Nessun record trovato.'
-                  })
+                  }),
+                  plugins:[_ss]
                
               });
 			  grid.on("rowdblclick",function(grid, row, e){

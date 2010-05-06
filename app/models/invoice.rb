@@ -66,7 +66,7 @@ class Invoice < Coded
       }
       @c_imponibile=t
       if (self.discount)
-          logger.debug("Vado a sottrarre #{@c_imponibile} da #{self.discount}")
+          #logger.debug("Vado a sottrarre #{@c_imponibile} da #{self.discount}")
           @c_imponibile -= self.discount unless @c_imponibile==0
       end
       return @c_imponibile

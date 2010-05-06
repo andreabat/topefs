@@ -20,6 +20,17 @@ class Pricing < Coded
       return t
   end
   
+  def total_cost
+      t=0
+      self.pricingitems.each{|z|
+          x=z.projectitem
+          next if x.nil?
+          q = !z.quantity.nil? ? z.quantity : 1
+          t +=  (x.cost)*(q)
+      }
+      return t
+  end
+  
    def set_code
      #self.project.start.year
          pri = Pricing.maximum("code_abs",:conditions => "year = #{Date.today.year}")

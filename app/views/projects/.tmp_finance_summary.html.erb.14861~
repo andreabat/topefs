@@ -1,0 +1,72 @@
+T	
+
+                    <div class="x-grid3-summary-row">
+				    
+					
+					<fieldset><legend>Analisi Economica</legend>
+    				<table class="x-grid3-summary-table" border="0" cellspacing="0" cellpadding="0" style="{tstyle}">
+    					<tbody>
+    						<% 
+								ot = @project.order_total
+								pt = @project.pricing_total
+								ct =  @costi_vivi +@costi_fornitore+@costi_personale
+							    mol =  @costi_preventivati-(@project.items_cost_total+ @costi_personale)
+							 %>
+						<tr><td>Totale Costi Vivi:</td><td align="right" colspan="1"><b><%="#{number_to_currency( @costi_vivi)}"%></b></td> <td rowspan="5">&nbsp;</td><td rowspan="5"><%=@graph_costi%></td></tr>    													 
+						<tr><td>Totale Costi Fornitori:</td><td align="right"><b><%="#{number_to_currency( @costi_fornitore)}"%></b></td></tr>    													 
+						<tr><td>Totale Costi Personale:</td><td align="right"><b><%="#{number_to_currency( @costi_personale)}"%></b></td></tr>    													 						
+						<tr>
+							<td colspan="2"><hr></td>
+							
+						</tr>		
+						<tr><td>Totale Costi:</td><td align="right"><b><%="#{number_to_currency(@project.items_cost_total+ @costi_personale ) }"%></b></td></tr>    						
+						<tr><td>Totale Preventivato:</td><td align="right"><b> <%="#{number_to_currency( @costi_preventivati )}"%></b></td></tr>
+    					
+
+						<tr><td colspan="2"><hr></td></tr>		
+						<tr><td>MOL</td><td class="finance_ok"><%="#{number_to_currency( mol)}"%></td>
+						<td><b><%= number_to_percentage( mol/@costi_preventivati*100, :precision => 2) unless @costi_preventivati==0%></b></td></tr>		
+    					</tbody>
+                    </table>
+    				</fieldset>
+					
+					
+					
+					<fieldset><legend>Analisi Finanziaria</legend>
+    				<table class="x-grid3-summary-table" border="0" cellspacing="0" cellpadding="0" style="{tstyle}">
+    					<tbody>
+    						<%
+							    it =  @project.invoice_total
+								prt = @project.proceed_total
+								cit = @project.invoiced_orders_total
+								pot = @project.payed_orders_total
+								mol = it-cit
+								%>
+						
+    					<tr><td>Totale Fatturato:</td><td align="right"><b> <%="#{number_to_currency(it)}"%></b> </td>
+						
+							<td class="finance_ok">(da incassare <%="#{number_to_currency( @project.invoice_total-@project.proceed_total)}"%>)</td>
+							<td rowspan="5" style="display:none"><%=@graph_finanze%></td>
+						</tr>
+						<tr><td>Totale Ordinato:</td>
+								<td align="right"><b> <%="#{number_to_currency(ot)}" %></b></td>
+								<td align="right" class="finance_alert"><b > <%="(da pagare  #{number_to_currency( @costi_ordini-pot[:payed])})" %></b></td>
+						
+						</tr>
+
+<!--						<tr><td>MOL</td><td class="finance_ok"><%="#{number_to_currency( mol)}"%></td>
+						<td><b><%= number_to_percentage( mol/it*100, :precision => 2) unless it==0%></b></td></tr>		-->
+						
+						
+						<tr><td colspan="2"><hr></td></tr>		
+						<tr><td>Preventivi Approvati Cliente:</td><td align="right"><b> <%="#{number_to_currency( pt )}"%></b></td></tr>
+						<tr><td>Totale Costi Pagati:</td><td align="right" class="{markup_style}"><b><%="#{number_to_currency(pot[:payed])}"%></b></td></tr>
+						<tr><td>Totale Incassato:</td><td align="right" class="{markup_style}"><b><%="#{number_to_currency( prt)}"%></b></td></tr>
+						  
+									
+    					</tbody>
+                    </table>
+    				</fieldset>
+					<button onclick="update_finance_data()">Aggiorna</button>
+    				</div>
+					

@@ -17,8 +17,11 @@
 						  {name: 'project[status]', mapping: 'status.status'},
 						  {name: 'project[approved_pricings]', mapping: 'approved_pricings'},
 						  {name: 'project[approved_invoices]', mapping: 'approved_invoices'},
-						  {name: 'project[invoice_total]', mapping: 'invoice_total'},
-						  {name: 'project[pricing_total]', mapping: 'pricing_total'},
+						  {name: 'project[invoice_total]', mapping: 'euro_invoice_total'},
+						  {name: 'project[pricing_total]', mapping: 'euro_pricing_total'},
+						  {name: 'project[mol]', mapping: 'euro_mol'},
+						  {name: 'project[perc_mol]', mapping: 'perc_mol'},
+						  {name: 'project[cost]', mapping: 'euro_costs_approved_invoices_total'},
 						  {name: 'project[title]', mapping: 'title'},
 						  {name: 'project[start]', mapping: 'start'},
 						  {name: 'project[end]', mapping: 'end'},
@@ -59,7 +62,11 @@
 	{header: 'Preventivi',  dataIndex: 'project[approved_pricings]'},
 	{header: 'Importo P',  dataIndex: 'project[pricing_total]'},
 	{header: 'Fatture',  dataIndex: 'project[approved_invoices]'},
-	{header: 'Importo F',  dataIndex: 'project[invoice_total]'}
+	{header: 'Importo F',  dataIndex: 'project[invoice_total]'},
+	{header: 'Costi',  dataIndex: 'project[cost]'},
+	{header: '% MOL',  dataIndex: 'project[perc_mol]'},
+	{header: 'MOL',  dataIndex: 'project[mol]'}
+	
     /*{header: 'Data Inzio', dataIndex: 'project[start]',renderer:function(v){return Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(v,'Y-m-d'))}},
     {header: 'Data Fine', dataIndex: 'project[end]',renderer: function(v){return Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(v,'Y-m-d'))}},
     {header: 'Note', dataIndex: 'project[note]'}*/
@@ -77,7 +84,15 @@
 
               var cm = project_column_model;
               cm.defaultSortable = true;
-
+				
+				
+			  var _ss = new Ext.ux.grid.Search({
+				  			id:"_ss",
+                              position:'top',
+							  checkIndexes:['project[customer]','project[code]'],
+							  searchText:'<%=:grid_search.localize%>'
+                          });
+			 	
               // create the grid
               var grid = new Ext.grid.GridPanel({
                   ds: ds,
@@ -95,7 +110,27 @@
                   },
 
                   // inline toolbars
-                  tbar:["-",
+                  tbar:["-",{text:"Stampa elenco",handler:function(){
+									var app ="";
+									 
+										
+									 var query = "index?format=odt&year=<%=@year%>" + app;
+									 var val = _ss.field.getValue();
+									 var fields = [];
+						            _ss.menu.items.each(function(item) {
+						                if(item.checked) {
+						                    fields.push(item.dataIndex);
+						                }
+						            });
+										if (fields.length>0){
+											query+= "&fields=[\"" + fields.join("\",\"") + "\"]"
+										}
+									    if(val!=""){
+											query+= "&query=" + val
+										}
+									 window.open(query);
+									 
+								}},
 								"Anno:",
 								{
 									xtype:"textfield",
@@ -109,7 +144,8 @@
 									handler:function(){
 										document.location="index?year=" + Ext.getCmp("_anno").getValue();									
 									}
-								}] 
+								}],
+								plugins:[_ss]
               });
 
               // show record on double-click

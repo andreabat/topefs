@@ -1,0 +1,436 @@
+<%= javascript_include_tag "miframe.js" %>
+<%= javascript_include_tag "application.js" %>
+<script>
+var win_info;
+ 
+var orders_expired_store;
+var project_datastore = new Ext.data.Store({
+          proxy: new Ext.data.HttpProxy({
+                     url: '/projects/?format=ext_json',
+                     method: 'GET'
+                 }),
+          reader: new Ext.data.JsonReader({
+                      root: 'projects',
+                      id: 'id',
+                      totalProperty: 'results'
+                  },
+                  [ {name: 'id', mapping: 'id'}, {name: 'project[title]', mapping: 'title'},{name: 'project[start]', mapping: 'start'},{name: 'project[end]', mapping: 'end'},{name: 'project[note]', mapping: 'note'},{name: 'project[customer_id]', mapping: 'customer_id'},{name: 'project[company_id]', mapping: 'company_id'},{name: 'project[created_at]', mapping: 'created_at'},{name: 'project[updated_at]', mapping: 'updated_at'},{name: 'project[code]', mapping: 'code'} ]),
+          // turn on remote sorting
+          remoteSort: true,
+          sortInfo: {field: 'id', direction: 'DESC'}
+      });
+
+
+  var clienti=$A(<%= array_or_string_for_javascript(Customer.find(:all).map{|c| escape_javascript c.ragionesociale + ":" +  c.id.to_s}) %>)
+  var project_column_model = new Ext.grid.ColumnModel([
+    {id: 'Codice',hidden:true, header: "#", width: 20, dataIndex: 'id'},
+	{id: 'JobN', header: "Job N.", width: 20, dataIndex: 'project[code]'},
+    {header: 'Titolo', dataIndex: 'project[title]'},
+	{
+		header: 'Cliente',
+		dataIndex: 'project[customer_id]',
+		renderer: function(id, c){
+			var x = clienti.find(function(x){
+				if (id == x.split(":")[1]) 
+					return true
+			});
+			if(!x) return;
+			return x.split(":")[0];
+		}
+	},
+//    {header: 'Inizio', dataIndex: 'project[start]',renderer: Ext.util.Format.dateRenderer('d/m/Y')},
+//    {header: 'Fine', dataIndex: 'project[end]',renderer: Ext.util.Format.dateRenderer('d/m/Y')},
+    {header: 'Note', dataIndex: 'project[note]'}
+  ]);
+
+
+Ext.onReady(function(){
+        Ext.QuickTips.init();
+		var p = new Ext.TabPanel({
+			 		deferredRender:true,
+					width:getViewPort().width,
+				 	height:getViewPort().height,
+					id:'home_panel',
+					enableTabScroll:true,
+                    activeTab:0,
+					autoScroll:true,
+					border:false,
+				    items: [
+			 
+				<%="build_list_commesse()," if (current_user.has_role?("admin")||current_user.has_role?("account"))%>
+				
+				<%="build_invoice_expired_data_view()," if current_user.has_role?("admin")||current_user.has_role?("account")%>
+				
+				<%="build_orders_expired_data_view()," if current_user.has_role?("admin")||current_user.has_role?("account")%>
+				new Ext.ux.ManagedIframePanel({
+								defaultSrc:"/timesheet/",
+								loadMask:true,
+								iconCls:'icon_calendar',
+								closable:false,
+								title:"Timesheet"
+							}) 
+			]
+		});
+
+		p.render(document.body);
+		
+		
+		}
+		
+		);
+
+
+
+
+ 
+  
+ 
+function build_list_commesse(){
+              var ds = project_datastore;
+              var cm = project_column_model;
+              cm.defaultSortable = true;
+
+              // create the grid
+              var grid = new Ext.grid.GridPanel({
+                 ds: ds,
+				 iconCls:'icon_asterisk',
+                 cm: cm,
+                 sm: new Ext.grid.RowSelectionModel({singleSelect:true}),
+                 title:      'Elenco Commesse',
+				 header:true,
+				 collapsible:false,
+				 width:getViewPort(15).width,
+				 height:getViewPort(20).height,
+                 stripeRows: true,
+                  viewConfig: {
+                      forceFit:true
+                  },
+
+                  // inline toolbars
+                  tbar:[{
+                      text:'<%=:grid_new.localize%>',
+                      handler: function(){
+					  	 if (is_iframe) {
+                                         parent.Ext.getCmp("west-panel").collapse();
+                         }
+						build_parent_tab('/projects/new',"<%=:grid_new.localize<<' '  << :l_project.localize %>" )
+						},
+                      iconCls:'icon_new'
+                  }, '-', {
+                      text:'<%=:grid_edit.localize%>',
+                      handler: function(){
+                                 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                     
+                                     if (is_iframe) {
+                                         parent.Ext.getCmp("west-panel").collapse();
+                                     }
+								 	build_parent_tab('/projects/' + selected.data.id + '/edit',"<%=:grid_edit.localize%> " + selected.data["project[title]"])
+                                 } else { 
+                                   alert('<%=:grid_select_row.localize%>');
+                                 }
+                               },
+                      iconCls:'icon_edit'
+                  },'-', {
+                      text:'Duplica',
+                      tooltip:'Duplica la commessa selezionata',
+                      handler: function(){
+                                 	 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+                                	  duplicate (selected.data.id);
+									  
+                                 } else { 
+                                	   alert('<%=:grid_select_row.l%>.');
+                                 }
+                               },
+                      iconCls:'icon_duplicate'
+                  }, {
+                      text:'<%=:l_delete.l%>',
+                      tooltip:'Elimina',
+                      handler: function(){
+					  			
+                                 	 var selected = grid.getSelectionModel().getSelected();
+                                 if(selected) {
+								 		if(!confirm("L'operazione è irreversibile.Proseguire ?"))return;
+                                	  remove (selected.data.id);
+									  
+                                 } else { 
+                                	   alert('<%=:grid_select_row.l%>.');
+                                 }
+                               },
+                      iconCls:'icon_delete'
+                  },
+				  '->'],
+                  bbar: new Ext.PagingToolbar({
+                            pageSize: <%=@default_grid_page_size%>,
+                            store: ds,
+                            displayInfo: true,
+                            displayMsg: 'Record {0} - {1} of {2}',
+                            emptyMsg: "No records found"
+                  }),
+                  plugins:[new Ext.ux.grid.Search({
+                              position:'top',
+//							  params:{status_id:1},
+							  searchText:'<%=:grid_search.localize%>'
+                          })]
+              });
+
+              // show record on double-click
+              grid.on("rowdblclick", function(grid, row, e) {
+			  
+			  	//se sono iframe...
+				if(is_iframe){
+					parent.Ext.getCmp("west-panel").collapse();
+				}
+				build_parent_tab('/projects/' + grid.getStore().getAt(row).id, "Commessa " + grid.getStore().getAt(row).get("project[title]"));
+				
+              });
+
+/*			grid.on("rowclick", function(grid, row, e) {
+
+				var tpl = new Ext.XTemplate("Commessa:{'project[title]'}<br>Data Ultima Modifica:{updated_at}<br>Ultimo Utente:{user_id}")
+				tpl.overwrite($("_dettaglio_progetto"),grid.getStore().getAt(row).data);
+				
+				
+              });
+*/
+//			  ds.baseParams={fields:"['status_id']",query:'1'}
+              ds.load({params: {start: 0, limit:<%=@default_grid_page_size%>}});
+			  
+			  return grid;
+          } 
+
+ 
+	function build_invoice_expired_data_view(){
+ 
+			var invoice_expired_store = new Ext.data.Store({
+          proxy: new Ext.data.HttpProxy({
+                     url: '/invoices/expired',
+                     method: 'GET'
+                 }),
+          reader: new Ext.data.JsonReader({
+                      root: 'invoices',
+                      id: 'id',
+                      totalProperty: 'results'
+                  },
+                  ['id','code','project_id','title','document_id',{
+					name:'project_title',
+					mapping:'project.title'
+					}
+					,{
+					name:'customer_ragionesociale',
+					mapping:'project.customer.ragionesociale'
+					},
+					{
+					name:'expires',
+					type:'date',
+					convert: function(v){
+						return Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(v,'Y-m-d'))
+					}
+					}]
+				  
+				  )
+          
+      });
+
+            var tpl = new Ext.XTemplate('<tpl for="."><br>', 
+					'<div class="thumb-wrap"  id="invoice_{id}">', 
+						'<fieldset>'
+						,'<a href="#" onclick="invoice_view_proceeds({id},\'{code}\')">visualizza pagamenti</a>'
+						,' | <a href="#" onclick="invoice_doc(\'{document_id}\',\'{code}\')">visualizza file</a><br><br>'
+						,'<b>Fattura</b>:{code} - {title}<br>'
+						,'<b>Cliente</b>:{customer_ragionesociale}<br>'
+						,'<b>Data Scadenza</b>:<span class="finance_alert">{expires}</span><br>'
+						,'<b>Progetto</b>:<a href="#" onclick="invoice_view_project({project_id},\'{project_title}\')">{project_title}</a><br>'
+						,'</fieldset>'
+						,'</div>', '</tpl>');
+			var dv = new Ext.DataView({
+                    store: invoice_expired_store,
+                    tpl: tpl,
+					deferEmptyText:false,
+                    loadingText: 'Caricamento in corso',
+                    overClass: 'x-view-over',
+                    itemSelector: 'div.thumb-wrap',
+                    emptyText: 'Nessuna fattura scaduta o in scadenza'
+                })
+				
+            var p = new Ext.Panel({
+                frame: true,
+ 				iconCls:'icon_euro',
+                autoScroll:true,
+				width:getViewPort(15).width,
+				height:getViewPort(20).height,
+                id: 'invoice-expired-view',
+                title: "Fatture in scadenza",
+                items: [dv]
+            });
+		 
+			invoice_expired_store.load();
+//			dv.on("dblclick",function(){
+//					//come nav si dovrebbe aprire nuovo tab, 
+//					//pagina progetto
+//					//con focus sul tab fatture...
+//				});
+			 p.on("activate",function(x){
+					x.ownerCt.doLayout();
+			
+			});
+            return p;
+        }
+		
+		function build_orders_expired_data_view(){
+            orders_expired_store = new Ext.data.JsonStore({
+                url: '/orders/expired',
+                baseParams: {
+                    format: 'ext_json'
+                },
+                root: 'orders',
+                id: 'id',
+                fields: ['id','code',
+					{
+						name:'amount_invoice',
+						type:'float'  
+					},
+					'payed_invoice','project_id','title','document_id','amount_invoice','total_ivato',{
+					name:'project_title',
+					mapping:'project.title'
+					},
+					{
+					name:'supplier',
+					mapping:'supplier.ragionesociale'
+					},
+					{
+					name:'expires_invoice',
+					type:'date',
+					convert: function(v){
+						return Ext.util.Format.dateRenderer('d/m/Y')(Date.parseDate(v,'Y-m-d'))
+					}
+					
+					}]
+            });
+
+            var tpl = new Ext.XTemplate('<tpl for="."><br>', 
+					'<div class="thumb-wrap"  id="order_{id}">', 
+						'<fieldset>'
+						,'<a href="#" onclick="order_doc(\'{document_id}\',\'{id}\')">visualizza file</a>'
+						,' | <a href="#" onclick="order_pay(\'{id}\',this)">paga fattura</a><br><br>'
+						,'<b>Nr. Ordine</b>:{code} - {title}<br>'
+						,'<b>Importo</b>:{[fm.euroMoney(values.total_ivato)]} ivato<br>'
+						,'<b>Data Scadenza</b>:<span class="finance_alert">{expires_invoice}</span><br>'
+						,'<b>Progetto</b>:<a href="#" onclick="invoice_view_project({project_id},\'{project_title}\')">{project_title}</a><br>'
+						,'<b>Fornitore</b>:{supplier}'
+						,'</fieldset>'
+						,'</div>', '</tpl>');
+						
+			var dv = new Ext.DataView({
+                    store: orders_expired_store,
+                    tpl: tpl,
+					deferEmptyText:false,
+                    loadingText: 'Caricamento in corso',
+                    overClass: 'x-view-over',
+                    itemSelector: 'div.thumb-wrap',
+                    emptyText: 'Nessuna fattura ordine scaduta o in scadenza'
+                })
+            var p = new Ext.Panel({
+                frame: false,
+ 				iconCls:'icon_ordini',
+                autoScroll:true,
+				deferredRender:true,
+				 width:getViewPort(15).width,
+				 height:getViewPort(20).height,
+                id: 'order-expired-view',
+                title: "Fatture Fornitori in scadenza",
+                items: dv
+            });
+			orders_expired_store.load();
+			dv.on("dblclick",function(){
+					 orders_expired_store.load();
+				});
+			 p.on("activate",function(x){
+			 		x.doLayout();
+			
+			});				
+			 
+            return p;
+        }
+		
+		function order_pay(id,obj){
+			//pago
+            var dop = new Ext.Window({
+                title: 'Inserire la Data Pagamento',
+				animateTarget:obj,
+					width:150,
+					height:110,
+                items: [{
+                    xtype: "datefield",
+                    id: 'dp_ordini',
+					
+                    format: 'd-m-Y',
+                    altFormats: 'Y-m-d',
+                    value: new Date().format("d-m-Y")
+                }],
+                buttons: [{
+                    text: "salva",
+                    handler: function(f, b){
+                        if (Ext.getCmp("dp_ordini").validate()) {
+                            Ext.Ajax.request({
+                                method: 'GET',
+                                url: "/orders/payed/" + id + "?date=" + Ext.getCmp("dp_ordini").getValue().format("Y-m-d")
+                            });
+                            orders_expired_store.load();
+							dop.close();
+                        }
+                    }
+                }]
+            
+            
+            });
+			dop.show();
+		}
+
+		function order_doc(document_id,code){
+		if (!document_id||document_id=="null"){return; }
+		//visualizzo in riepilogo ?
+		build_local_tab("/documents/"+document_id,"Ordine " + code)
+	}
+	
+		function invoice_view_proceeds(invoice_id,code){
+					build_local_tab("/proceeds/index?invoice_id="+invoice_id,"Dettaglio Fattura " + code)			
+		}
+	function invoice_view_project(project_id,title){
+					build_parent_tab("/projects/"+project_id,"Commessa " + title)		
+		}
+		
+	function invoice_doc(document_id,code){
+		if (!document_id||document_id=="null"){return; }
+		build_local_tab("/documents/"+document_id,"Fattura " + code)
+	}
+	
+	function build_parent_tab(url,title){
+		var d= new parent.Ext.ux.ManagedIframePanel({
+								defaultSrc:url,
+								loadMask:true,
+								closable:true,
+								
+								title:title
+							})  
+							
+		parent.Ext.getCmp("home_panel").add(d);
+		parent.Ext.getCmp("home_panel").activate(d);
+	}
+	function build_local_tab(url,title){
+		var d= new Ext.ux.ManagedIframePanel({
+								defaultSrc:url,
+								height:getViewPort().height,
+								width:getViewPort().width,
+								loadMask:true,
+								closable:true,
+								title:title
+							})  
+							
+		Ext.getCmp("home_panel").add(d);
+		Ext.getCmp("home_panel").activate(d);
+	}
+</script>
+<div id="project-grid"></div>
+ 

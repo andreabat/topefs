@@ -2,7 +2,7 @@ class Invoiceitem< ActiveRecord::Base
   include ActionView::Helpers::NumberHelper
   belongs_to :invoice
   belongs_to :category
-  has_one    :projectitem
+  belongs_to   :projectitem
   acts_as_reportable
   
   def category_name

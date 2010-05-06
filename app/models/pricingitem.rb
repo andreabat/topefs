@@ -1,8 +1,9 @@
 
 class Pricingitem< ActiveRecord::Base
   include ActionView::Helpers::NumberHelper
-    belongs_to :pricing
+  belongs_to :pricing
   belongs_to :category
+  belongs_to :projectitem
   acts_as_reportable
 
 def category_name

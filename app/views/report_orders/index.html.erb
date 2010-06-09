@@ -135,7 +135,7 @@
 						                }
 						            });
 										if (fields.length>0){
-											query+= "&fields=[\"" + fields.join("\",\"") + "\"]"
+											query+= "&fields="+escape("[\"" + fields.join("\",\"") + "\"]")
 										}
 									    if(val!=""){
 											query+= "&query=" + val
